@@ -104,7 +104,7 @@ Amarelo-ouro, tipografia preta pesada, magenta e turquesa nos acentos, bordas gr
 | Estilo | Tailwind CSS 4 |
 | Áudio | Prévias do Deezer (30s, sem autenticação) |
 | Estado | Supabase (Postgres + Realtime + RLS) |
-| Testes | Vitest |
+| Testes | Vitest — 39 testes nas regras, catálogo e sementes |
 
 ---
 
@@ -147,10 +147,13 @@ scripts/seed/           # catálogo curado, por baralho
 - [x] Baralho de 258 músicas curadas, com distribuição por década
 - [x] Sistema visual, abertura animada, responsivo desktop e mobile
 - [x] Fonte de áudio validada (prévia do Deezer, sem login)
-- [ ] Áudio tocando dentro do app
-- [ ] Linha do tempo jogável
-- [ ] Salas, multiplayer e modo vitrola
-- [ ] Fichas, roubo e palpite de artista/título
+- [x] Áudio tocando no app, com pausar e repetir
+- [x] Linha do tempo jogável em dois passos
+- [x] Salas, turnos e multiplayer por polling
+- [x] Fichas por acertar artista e título, trocáveis por carta
+- [x] Três níveis de dificuldade
+- [x] Animação de vitória
+- [ ] Roubar carta de quem errou
 - [ ] Placar entre partidas
 - [ ] Deploy
 

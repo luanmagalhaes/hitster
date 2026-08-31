@@ -72,3 +72,9 @@ export function labelForSlot(years: readonly number[], slotIndex: number): strin
 
   return slot ? slotLabel(slot.lowerYear, slot.upperYear) : "posição inválida";
 }
+
+export function isValidSlot(years: readonly number[], slotIndex: number): boolean {
+  return (
+    Number.isInteger(slotIndex) && slotIndex >= 0 && slotIndex <= years.length
+  );
+}

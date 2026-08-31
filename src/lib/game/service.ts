@@ -1,7 +1,13 @@
 import { tracksForDeck, trackById } from "@/data/tracks";
 import { answerMatches, findPreview } from "@/lib/deezer";
 import { difficultyPresets, pickSpreadSeeds, type Difficulty } from "@/lib/game/seeds";
-import { correctSlotIndex, isSlotCorrect, labelForSlot, nextSeat } from "@/lib/game/timeline";
+import {
+  correctSlotIndex,
+  isSlotCorrect,
+  isValidSlot,
+  labelForSlot,
+  nextSeat,
+} from "@/lib/game/timeline";
 import { serverClient } from "@/lib/supabase/server";
 import { shuffle } from "@/utils/shuffle";
 import type { DeckKind } from "@/types/track";
@@ -301,7 +307,7 @@ export async function drawTrack(input: { code: string; token: string }) {
     .maybeSingle();
 
   if (!top) {
-    throw new ServiceError("o monte acabou", 409);
+    return finishByPileOut(room.id);
   }
 
   const trackId = top.track_id as string;
@@ -320,6 +326,41 @@ export async function drawTrack(input: { code: string; token: string }) {
   await record({ roomId: room.id, type: "TRACK_DRAWN", actorId: me.id });
 
   return { trackId, alreadyPlaying: false };
+}
+
+async function finishByPileOut(roomId: string): Promise<never> {
+  const client = serverClient();
+
+  const { data: players } = await client
+    .from("vt_players")
+    .select("id, timeline_count, tokens, seat")
+    .eq("room_id", roomId)
+    .order("timeline_count", { ascending: false });
+
+  const leader = (players ?? [])[0];
+
+  if (leader) {
+    await client
+      .from("vt_rooms")
+      .update({
+        phase: RoomPhase.Finished,
+        winner_player_id: leader.id,
+        finished_at: new Date().toISOString(),
+        current_track_id: null,
+        current_started_at: null,
+      })
+      .eq("id", roomId)
+      .is("winner_player_id", null);
+
+    await record({
+      roomId,
+      type: "MATCH_WON",
+      actorId: leader.id as string,
+      detail: "o monte acabou, venceu quem tinha mais cartas",
+    });
+  }
+
+  throw new ServiceError("o monte acabou e a partida foi encerrada", 409);
 }
 
 export async function submitGuess(input: {
@@ -358,6 +399,11 @@ export async function submitGuess(input: {
     .order("year");
 
   const years = (mine ?? []).map((row) => row.year as number);
+
+  if (!isValidSlot(years, input.slotIndex)) {
+    throw new ServiceError("escolha uma das posições da sua linha do tempo", 422);
+  }
+
   const correct = isSlotCorrect(years, input.slotIndex, track.year);
   const artistTried = Boolean(input.artistGuess?.trim());
   const titleTried = Boolean(input.titleGuess?.trim());
@@ -582,7 +628,7 @@ export async function spendTokens(input: { code: string; token: string }) {
     .maybeSingle();
 
   if (!top) {
-    throw new ServiceError("o monte acabou", 409);
+    return finishByPileOut(room.id);
   }
 
   const track = trackById(top.track_id as string);
