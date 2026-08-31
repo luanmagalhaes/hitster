@@ -8,9 +8,9 @@ import { copy } from "@/data/copy";
 import type { DeckKind } from "@/types/track";
 
 const levels = [
-  { key: "EASY", label: "Fácil", hint: "1 carta na mesa · alvo 8" },
-  { key: "NORMAL", label: "Normal", hint: "3 cartas na mesa · alvo 10" },
-  { key: "HARD", label: "Difícil", hint: "5 cartas na mesa · alvo 12" },
+  { key: "CLASSIC", label: "Clássico", hint: "1 carta · alvo 10 · como no original" },
+  { key: "QUICK", label: "Rápido", hint: "3 cartas · alvo 8 · partida curta" },
+  { key: "MARATHON", label: "Maratona", hint: "5 cartas · alvo 12 · jogo longo" },
 ];
 
 interface JoinScreenProps {
@@ -112,7 +112,7 @@ export function JoinScreen({
         {creating ? (
           <div>
             <span className="display mb-2 block text-xs uppercase tracking-[0.18em] text-ink/55">
-              Dificuldade
+              Modo de jogo
             </span>
             <div className="grid gap-2 sm:grid-cols-3">
               {levels.map((level) => (
@@ -135,7 +135,8 @@ export function JoinScreen({
               ))}
             </div>
             <p className="mt-2 text-xs text-ink/55">
-              Mais cartas na mesa deixam os intervalos menores, então a escolha fica mais difícil.
+              No Clássico você começa com uma carta só e o jogo aperta sozinho: cada carta que entra
+              cria um intervalo novo e menor. Começar com mais cartas encurta a partida.
             </p>
           </div>
         ) : null}

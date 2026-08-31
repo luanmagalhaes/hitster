@@ -6,6 +6,8 @@ export interface Session {
 }
 
 const key = "vitrola.session";
+const recentKey = "vitrola.recent";
+const maxRecent = 6;
 const listeners = new Set<() => void>();
 
 let cachedRaw: string | null = null;
@@ -40,6 +42,73 @@ function bootstrap() {
       window.history.replaceState({}, "", window.location.pathname);
     }
   }
+}
+
+export interface RecentSeat {
+  code: string;
+  name: string;
+  accessToken: string;
+  playerId: string;
+  savedAt: number;
+}
+
+function readRecent(): RecentSeat[] {
+  try {
+    const raw = window.localStorage.getItem(recentKey);
+    const parsed = raw ? (JSON.parse(raw) as RecentSeat[]) : [];
+
+    return Array.isArray(parsed) ? parsed.filter((seat) => seat.code && seat.accessToken) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeRecent(seats: RecentSeat[]) {
+  try {
+    window.localStorage.setItem(recentKey, JSON.stringify(seats.slice(0, maxRecent)));
+  } catch {
+    return;
+  }
+}
+
+export function recentSeats(): RecentSeat[] {
+  return readRecent().sort((a, b) => b.savedAt - a.savedAt);
+}
+
+export function rememberSeat(session: Session) {
+  const others = readRecent().filter(
+    (seat) =>
+      !(
+        seat.code === session.code &&
+        seat.name.trim().toLowerCase() === session.name.trim().toLowerCase()
+      ),
+  );
+
+  writeRecent([
+    {
+      code: session.code,
+      name: session.name,
+      accessToken: session.accessToken,
+      playerId: session.playerId,
+      savedAt: Date.now(),
+    },
+    ...others,
+  ]);
+}
+
+export function seatFor(code: string, name: string): RecentSeat | null {
+  const wanted = name.trim().toLowerCase();
+
+  return (
+    readRecent().find(
+      (seat) => seat.code === code.toUpperCase() && seat.name.trim().toLowerCase() === wanted,
+    ) ?? null
+  );
+}
+
+export function forgetSeat(code: string) {
+  writeRecent(readRecent().filter((seat) => seat.code !== code.toUpperCase()));
+  listeners.forEach((listener) => listener());
 }
 
 export function subscribeSession(listener: () => void): () => void {
@@ -89,6 +158,7 @@ export function saveSession(next: Session) {
     return;
   }
 
+  rememberSeat(next);
   listeners.forEach((listener) => listener());
 }
 

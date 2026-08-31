@@ -4,7 +4,7 @@ import type { Difficulty } from "@/lib/game/seeds";
 import type { DeckKind } from "@/types/track";
 
 const decks: DeckKind[] = ["NATIONAL", "INTERNATIONAL", "MIXED"];
-const levels: Difficulty[] = ["EASY", "NORMAL", "HARD"];
+const levels: Difficulty[] = ["CLASSIC", "QUICK", "MARATHON"];
 
 export async function POST(request: Request) {
   return handle(async () => {
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     const deck = decks.includes(body.deck) ? (body.deck as DeckKind) : "MIXED";
     const difficulty = levels.includes(body.difficulty)
       ? (body.difficulty as Difficulty)
-      : "NORMAL";
+      : "CLASSIC";
 
     return createRoom({ hostName: String(body.hostName ?? ""), deck, difficulty });
   });

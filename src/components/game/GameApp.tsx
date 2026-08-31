@@ -15,10 +15,10 @@ import type { DeckKind } from "@/types/track";
 type View = "HOME" | "CREATE" | "JOIN";
 
 export function GameApp() {
-  const { session, save, clear } = useSession();
+  const { session, save, clear, seats, seatFor, forget } = useSession();
   const [view, setView] = useState<View>("HOME");
   const [deck, setDeck] = useState<DeckKind>("MIXED");
-  const [difficulty, setDifficulty] = useState("NORMAL");
+  const [difficulty, setDifficulty] = useState("CLASSIC");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastResult, setLastResult] = useState<GuessResult | null>(null);
@@ -107,6 +107,22 @@ export function GameApp() {
           onBack={() => setView("HOME")}
           onSubmit={(input) =>
             run(async () => {
+              if (view === "JOIN") {
+                const known = seatFor(input.code, input.name);
+
+                if (known) {
+                  save({
+                    code: known.code,
+                    playerId: known.playerId,
+                    accessToken: known.accessToken,
+                    name: known.name,
+                  });
+                  setView("HOME");
+
+                  return;
+                }
+              }
+
               const result =
                 view === "CREATE"
                   ? await api.createRoom(input.name, deck, difficulty)
@@ -124,6 +140,16 @@ export function GameApp() {
       <HomeScreen
         deck={deck}
         onDeck={setDeck}
+        seats={seats()}
+        onResume={(seat) =>
+          save({
+            code: seat.code,
+            playerId: seat.playerId,
+            accessToken: seat.accessToken,
+            name: seat.name,
+          })
+        }
+        onForget={forget}
         onCreate={() => setView("CREATE")}
         onJoin={() => setView("JOIN")}
       />

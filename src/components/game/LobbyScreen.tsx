@@ -17,6 +17,12 @@ interface LobbyScreenProps {
   onLeave: () => void;
 }
 
+const modeLabels: Record<string, string> = {
+  CLASSIC: "Clássico",
+  QUICK: "Rápido",
+  MARATHON: "Maratona",
+};
+
 const deckLabels: Record<string, string> = {
   NATIONAL: copy.decks.national,
   INTERNATIONAL: copy.decks.international,
@@ -115,7 +121,9 @@ export function LobbyScreen({
           </ul>
 
           <p className="mt-4 rounded-2xl border-2 border-ink bg-sun-light p-3 text-xs font-semibold text-ink/70">
-            Baralho: {deckLabels[room.deck] ?? room.deck} · alvo de {room.target_cards} cartas
+            {modeLabels[room.difficulty] ?? room.difficulty} · baralho {deckLabels[room.deck] ?? room.deck} ·{" "}
+            {room.seed_cards} carta{room.seed_cards > 1 ? "s" : ""} de saída · alvo{" "}
+            {room.target_cards}
           </p>
 
           {error ? (

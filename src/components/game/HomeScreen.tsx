@@ -5,6 +5,7 @@ import { Screen } from "@/components/ui/Screen";
 import { Vinyl } from "@/components/ui/Vinyl";
 import { Wordmark } from "@/components/ui/Wordmark";
 import { brand, copy } from "@/data/copy";
+import type { RecentSeat } from "@/lib/session";
 import type { DeckKind } from "@/types/track";
 
 const decks: Array<{ key: DeckKind; label: string; hint: string; tone: string }> = [
@@ -21,11 +22,24 @@ const decks: Array<{ key: DeckKind; label: string; hint: string; tone: string }>
 interface HomeScreenProps {
   deck: DeckKind;
   onDeck: (deck: DeckKind) => void;
+  seats: RecentSeat[];
+  onResume: (seat: RecentSeat) => void;
+  onForget: (code: string) => void;
   onCreate: () => void;
   onJoin: () => void;
 }
 
-export function HomeScreen({ deck, onDeck, onCreate, onJoin }: HomeScreenProps) {
+export function HomeScreen({
+  deck,
+  onDeck,
+  seats,
+  onResume,
+  onForget,
+  onCreate,
+  onJoin,
+}: HomeScreenProps) {
+  const lastSeat = seats[0];
+
   return (
     <Screen wide>
       <div className="flex flex-1 flex-col justify-center gap-10 py-6 lg:flex-row lg:items-center lg:gap-16">
@@ -36,6 +50,22 @@ export function HomeScreen({ deck, onDeck, onCreate, onJoin }: HomeScreenProps) 
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:mx-auto sm:max-w-sm lg:mx-0">
+            {lastSeat ? (
+              <div className="animate-sleeve-slide mb-1 rounded-2xl border-2 border-ink bg-aqua p-3.5 text-left">
+                <p className="text-xs font-semibold text-ink/75">
+                  {`Você estava na sala ${lastSeat.code} como ${lastSeat.name}.`}
+                </p>
+                <div className="mt-2.5 flex gap-2">
+                  <Button variant="ink" fullWidth onClick={() => onResume(lastSeat)}>
+                    Voltar pra sala
+                  </Button>
+                  <Button variant="ghost" onClick={() => onForget(lastSeat.code)}>
+                    Esquecer
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+
             <Button variant="ink" size="lg" fullWidth onClick={onCreate}>
               {copy.home.createRoom}
             </Button>

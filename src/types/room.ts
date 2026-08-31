@@ -12,7 +12,7 @@ export interface RoomRow {
   phase: RoomPhase;
   deck: "NATIONAL" | "INTERNATIONAL" | "MIXED";
   target_cards: number;
-  difficulty: "EASY" | "NORMAL" | "HARD";
+  difficulty: "CLASSIC" | "QUICK" | "MARATHON";
   seed_cards: number;
   token_cost: number;
   host_player_id: string | null;

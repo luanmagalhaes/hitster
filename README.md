@@ -25,6 +25,16 @@ Primeiro a montar **10 músicas na ordem certa** ganha.
 | 5️⃣ | Errou? Volta pro monte e a vez passa |
 | 6️⃣ | Quem fechar **10 cartas em ordem** primeiro leva |
 
+Cada carta que entra vira uma âncora nova, então os intervalos multiplicam e encolhem: com 1 carta são 2 opções, com 9 cartas são 10. O jogo começa fácil e aperta sozinho.
+
+### 🎚️ Modos
+
+| Modo | Cartas de saída | Alvo | Para quem |
+| ---- | :-------------: | :--: | --------- |
+| **Clássico** | 1 | 10 | como no jogo de mesa |
+| **Rápido** | 3 | 8 | partida curta |
+| **Maratona** | 5 | 12 | jogo longo |
+
 ### 🪙 As fichas
 
 Ficha é o tempero. Você gasta uma para:
@@ -151,8 +161,9 @@ scripts/seed/           # catálogo curado, por baralho
 - [x] Linha do tempo jogável em dois passos
 - [x] Salas, turnos e multiplayer por polling
 - [x] Fichas por acertar artista e título, trocáveis por carta
-- [x] Três níveis de dificuldade
+- [x] Três modos de jogo (clássico, rápido, maratona)
 - [x] Animação de vitória
+- [x] Voltar para a sala depois de sair
 - [ ] Roubar carta de quem errou
 - [ ] Placar entre partidas
 - [ ] Deploy

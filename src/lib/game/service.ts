@@ -120,7 +120,7 @@ export async function createRoom(input: {
     throw new ServiceError(codeError.message, 500);
   }
 
-  const difficulty: Difficulty = input.difficulty ?? "NORMAL";
+  const difficulty: Difficulty = input.difficulty ?? "CLASSIC";
   const preset = difficultyPresets[difficulty];
 
   const { data: room, error: roomError } = await client

@@ -61,14 +61,27 @@ describe("sementes da mesa", () => {
     expect(pickSpreadSeeds(tiny, 5, createSeededRng(1)).length).toBeLessThanOrEqual(2);
   });
 
-  it("mantem os presets de dificuldade coerentes", () => {
-    expect(difficultyPresets.EASY.seedCards).toBeLessThan(difficultyPresets.NORMAL.seedCards);
-    expect(difficultyPresets.NORMAL.seedCards).toBeLessThan(difficultyPresets.HARD.seedCards);
-    expect(difficultyPresets.EASY.targetCards).toBeLessThan(difficultyPresets.HARD.targetCards);
+  it("mantem os modos coerentes entre si", () => {
+    expect(difficultyPresets.CLASSIC.seedCards).toBeLessThan(difficultyPresets.QUICK.seedCards);
+    expect(difficultyPresets.QUICK.seedCards).toBeLessThan(difficultyPresets.MARATHON.seedCards);
+    expect(difficultyPresets.MARATHON.targetCards).toBeGreaterThan(
+      difficultyPresets.CLASSIC.targetCards,
+    );
   });
 
-  it("cabe o pior caso: 10 jogadores no dificil", () => {
-    const needed = difficultyPresets.HARD.seedCards * 10;
+  it("o classico e o mais fiel: uma carta de saida", () => {
+    expect(difficultyPresets.CLASSIC.seedCards).toBe(1);
+    expect(difficultyPresets.CLASSIC.targetCards).toBe(10);
+  });
+
+  it("o rapido encurta a partida em vez de dificultar", () => {
+    expect(difficultyPresets.QUICK.targetCards).toBeLessThan(
+      difficultyPresets.CLASSIC.targetCards,
+    );
+  });
+
+  it("cabe o pior caso: 10 jogadores na maratona", () => {
+    const needed = difficultyPresets.MARATHON.seedCards * 10;
 
     expect(nationalTracks.length).toBeGreaterThan(needed);
     expect(allTracks.length).toBeGreaterThan(needed);
