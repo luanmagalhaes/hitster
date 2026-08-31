@@ -1,10 +1,10 @@
-import { HomeScreen } from "@/components/game/HomeScreen";
+import { GameApp } from "@/components/game/GameApp";
 import { AppShell } from "@/components/layout/AppShell";
 
 export default function Page() {
   return (
     <AppShell>
-      <HomeScreen />
+      <GameApp />
     </AppShell>
   );
 }
