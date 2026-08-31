@@ -1,5 +1,6 @@
 import { tracksForDeck, trackById } from "@/data/tracks";
 import { answerMatches, findPreview } from "@/lib/deezer";
+import { difficultyPresets, pickSpreadSeeds, type Difficulty } from "@/lib/game/seeds";
 import { correctSlotIndex, isSlotCorrect, labelForSlot, nextSeat } from "@/lib/game/timeline";
 import { serverClient } from "@/lib/supabase/server";
 import { shuffle } from "@/utils/shuffle";
@@ -101,7 +102,11 @@ async function seatFor(roomId: string) {
   return ((last?.seat as number | undefined) ?? 0) + 1;
 }
 
-export async function createRoom(input: { hostName: string; deck: DeckKind }) {
+export async function createRoom(input: {
+  hostName: string;
+  deck: DeckKind;
+  difficulty?: Difficulty;
+}) {
   const client = serverClient();
   const { data: code, error: codeError } = await client.rpc("vt_generate_code");
 
@@ -109,9 +114,19 @@ export async function createRoom(input: { hostName: string; deck: DeckKind }) {
     throw new ServiceError(codeError.message, 500);
   }
 
+  const difficulty: Difficulty = input.difficulty ?? "NORMAL";
+  const preset = difficultyPresets[difficulty];
+
   const { data: room, error: roomError } = await client
     .from("vt_rooms")
-    .insert({ code, deck: input.deck })
+    .insert({
+      code,
+      deck: input.deck,
+      difficulty,
+      seed_cards: preset.seedCards,
+      target_cards: preset.targetCards,
+      token_cost: preset.tokenCost,
+    })
     .select()
     .single();
 
@@ -208,18 +223,29 @@ export async function startMatch(input: { code: string; token: string }) {
     throw new ServiceError(`precisa de pelo menos ${minPlayers} jogadores`, 409);
   }
 
-  const pool = shuffle(tracksForDeck(room.deck));
-  const seeds = pool.slice(0, roster.length);
-  const rest = pool.slice(roster.length);
+  const pool = tracksForDeck(room.deck);
+  const seedCount = room.seed_cards;
+  const used = new Set<string>();
+  const rows: Array<{ room_id: string; player_id: string; track_id: string; year: number }> = [];
 
-  await client.from("vt_timeline_cards").insert(
-    seeds.map((track, index) => ({
-      room_id: room.id,
-      player_id: roster[index].id,
-      track_id: track.id,
-      year: track.year,
-    })),
-  );
+  for (const player of roster) {
+    const available = pool.filter((track) => !used.has(track.id));
+    const seeds = pickSpreadSeeds(available, seedCount);
+
+    for (const track of seeds) {
+      used.add(track.id);
+      rows.push({
+        room_id: room.id,
+        player_id: player.id,
+        track_id: track.id,
+        year: track.year,
+      });
+    }
+  }
+
+  const rest = shuffle(pool.filter((track) => !used.has(track.id)));
+
+  await client.from("vt_timeline_cards").insert(rows);
 
   for (let index = 0; index < rest.length; index += 500) {
     await client.from("vt_draw_pile").insert(
@@ -529,4 +555,89 @@ export async function skipTrack(input: { code: string; token: string }) {
   await record({ roomId: room.id, type: "TRACK_SKIPPED", actorId: me.id });
 
   return { skipped: true };
+}
+
+export async function spendTokens(input: { code: string; token: string }) {
+  const client = serverClient();
+  const room = await loadRoom(input.code);
+  const me = await loadPlayer(room, input.token);
+
+  if (room.phase !== RoomPhase.Playing) {
+    throw new ServiceError("a partida não está em andamento", 409);
+  }
+
+  if (me.tokens < room.token_cost) {
+    throw new ServiceError(
+      `você precisa de ${room.token_cost} fichas e tem ${me.tokens}`,
+      409,
+    );
+  }
+
+  const { data: top } = await client
+    .from("vt_draw_pile")
+    .select("track_id")
+    .eq("room_id", room.id)
+    .order("position")
+    .limit(1)
+    .maybeSingle();
+
+  if (!top) {
+    throw new ServiceError("o monte acabou", 409);
+  }
+
+  const track = trackById(top.track_id as string);
+
+  if (!track) {
+    throw new ServiceError("faixa desconhecida", 500);
+  }
+
+  await client
+    .from("vt_draw_pile")
+    .delete()
+    .eq("room_id", room.id)
+    .eq("track_id", track.id);
+
+  await client.from("vt_timeline_cards").insert({
+    room_id: room.id,
+    player_id: me.id,
+    track_id: track.id,
+    year: track.year,
+  });
+
+  await client
+    .from("vt_players")
+    .update({ tokens: me.tokens - room.token_cost })
+    .eq("id", me.id);
+
+  await client.rpc("vt_sync_counts", { p_player: me.id });
+
+  await record({
+    roomId: room.id,
+    type: "TOKENS_SPENT",
+    actorId: me.id,
+    trackId: track.id,
+    detail: `trocou ${room.token_cost} fichas por ${track.artist} — ${track.title}, de ${track.year}`,
+  });
+
+  const { data: refreshed } = await client
+    .from("vt_players")
+    .select("id, timeline_count")
+    .eq("id", me.id)
+    .single();
+
+  if ((refreshed?.timeline_count as number) >= room.target_cards) {
+    await client
+      .from("vt_rooms")
+      .update({
+        phase: RoomPhase.Finished,
+        winner_player_id: me.id,
+        finished_at: new Date().toISOString(),
+        current_track_id: null,
+      })
+      .eq("id", room.id);
+
+    await record({ roomId: room.id, type: "MATCH_WON", actorId: me.id });
+  }
+
+  return { track: { artist: track.artist, title: track.title, year: track.year } };
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { WinnerBurst } from "@/components/game/WinnerBurst";
 import { Button } from "@/components/ui/Button";
 import { Screen } from "@/components/ui/Screen";
 import { Wordmark } from "@/components/ui/Wordmark";
@@ -15,8 +17,30 @@ interface VictoryScreenProps {
 }
 
 export function VictoryScreen({ players, cards, winnerId, myId, onExit }: VictoryScreenProps) {
+  const [showBurst, setShowBurst] = useState(true);
   const winner = players.find((player) => player.id === winnerId);
   const ranking = [...players].sort((a, b) => b.timeline_count - a.timeline_count);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setShowBurst(false), 3400);
+
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  if (showBurst) {
+    return (
+      <div className="stage-sun relative min-h-dvh">
+        <WinnerBurst name={winner?.name ?? "Alguém"} isMe={winnerId === myId} />
+        <button
+          type="button"
+          onClick={() => setShowBurst(false)}
+          className="display absolute bottom-8 left-1/2 -translate-x-1/2 cursor-pointer rounded-xl bg-ink/85 px-4 py-2 text-xs text-sun"
+        >
+          ver o placar
+        </button>
+      </div>
+    );
+  }
 
   return (
     <Screen

@@ -54,11 +54,18 @@ export interface GuessResult {
 }
 
 export const api = {
-  createRoom: (hostName: string, deck: DeckKind) =>
+  createRoom: (hostName: string, deck: DeckKind, difficulty: string) =>
     request<JoinResponse>("/api/rooms", {
       method: "POST",
-      body: JSON.stringify({ hostName, deck }),
+      body: JSON.stringify({ hostName, deck, difficulty }),
     }),
+
+  spendTokens: (code: string, token: string) =>
+    request<{ track: { artist: string; title: string; year: number } }>(
+      `/api/rooms/${code}/tokens`,
+      { method: "POST" },
+      token,
+    ),
 
   joinRoom: (code: string, name: string) =>
     request<JoinResponse>(`/api/rooms/${code}/join`, {

@@ -18,6 +18,7 @@ export function GameApp() {
   const { session, save, clear } = useSession();
   const [view, setView] = useState<View>("HOME");
   const [deck, setDeck] = useState<DeckKind>("MIXED");
+  const [difficulty, setDifficulty] = useState("NORMAL");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastResult, setLastResult] = useState<GuessResult | null>(null);
@@ -99,6 +100,8 @@ export function GameApp() {
         <JoinScreen
           mode={view === "CREATE" ? "CREATE" : "JOIN"}
           deck={deck}
+          difficulty={difficulty}
+          onDifficulty={setDifficulty}
           busy={busy}
           error={error}
           onBack={() => setView("HOME")}
@@ -106,7 +109,7 @@ export function GameApp() {
             run(async () => {
               const result =
                 view === "CREATE"
-                  ? await api.createRoom(input.name, deck)
+                  ? await api.createRoom(input.name, deck, difficulty)
                   : await api.joinRoom(input.code, input.name);
 
               save(result);
@@ -182,6 +185,7 @@ export function GameApp() {
         />
       }
       onPlay={() => run(() => api.play(session.code, session.accessToken))}
+      onSpendTokens={() => run(() => api.spendTokens(session.code, session.accessToken))}
       onGuess={(input) =>
         run(async () => {
           const result = await api.guess(session.code, session.accessToken, input);

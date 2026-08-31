@@ -21,6 +21,7 @@ interface TableScreenProps {
   audio: ReactNode;
   onPlay: () => void;
   onGuess: (input: { slotIndex: number; artistGuess?: string; titleGuess?: string }) => void;
+  onSpendTokens: () => void;
   onLeave: () => void;
 }
 
@@ -29,6 +30,7 @@ const eventLabels: Record<string, string> = {
   MATCH_STARTED: "começou a partida",
   TRACK_DRAWN: "puxou uma música",
   TRACK_SKIPPED: "pulou a faixa",
+  TOKENS_SPENT: "trocou fichas por carta",
   GUESS_CORRECT: "ACERTOU",
   GUESS_WRONG: "ERROU",
   MATCH_WON: "venceu a partida",
@@ -53,6 +55,7 @@ export function TableScreen({
   audio,
   onPlay,
   onGuess,
+  onSpendTokens,
   onLeave,
 }: TableScreenProps) {
   const me = players.find((player) => player.id === myId);
@@ -88,6 +91,22 @@ export function TableScreen({
       </header>
 
       <div className="mb-5">{audio}</div>
+
+      {me && me.tokens >= room.token_cost ? (
+        <div className="mb-5 rounded-3xl border-2 border-ink bg-aqua p-4 text-ink">
+          <span className="display block text-base">
+            Você tem {me.tokens} fichas
+          </span>
+          <span className="mt-1 block text-sm opacity-80">
+            Dá para trocar {room.token_cost} fichas por uma carta na posição certa, de graça.
+          </span>
+          <div className="mt-3">
+            <Button variant="ink" fullWidth disabled={busy} onClick={onSpendTokens}>
+              {busy ? "Trocando..." : `Trocar ${room.token_cost} fichas por 1 carta`}
+            </Button>
+          </div>
+        </div>
+      ) : null}
 
       <section className="mb-5">
         <div className="mb-2 flex items-baseline justify-between">

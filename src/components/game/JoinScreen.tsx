@@ -7,9 +7,17 @@ import { Wordmark } from "@/components/ui/Wordmark";
 import { copy } from "@/data/copy";
 import type { DeckKind } from "@/types/track";
 
+const levels = [
+  { key: "EASY", label: "Fácil", hint: "1 carta na mesa · alvo 8" },
+  { key: "NORMAL", label: "Normal", hint: "3 cartas na mesa · alvo 10" },
+  { key: "HARD", label: "Difícil", hint: "5 cartas na mesa · alvo 12" },
+];
+
 interface JoinScreenProps {
   mode: "CREATE" | "JOIN";
   deck: DeckKind;
+  difficulty: string;
+  onDifficulty: (value: string) => void;
   busy: boolean;
   error: string | null;
   onBack: () => void;
@@ -22,7 +30,16 @@ const deckLabels: Record<DeckKind, string> = {
   MIXED: copy.decks.mixed,
 };
 
-export function JoinScreen({ mode, deck, busy, error, onBack, onSubmit }: JoinScreenProps) {
+export function JoinScreen({
+  mode,
+  deck,
+  difficulty,
+  onDifficulty,
+  busy,
+  error,
+  onBack,
+  onSubmit,
+}: JoinScreenProps) {
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const creating = mode === "CREATE";
@@ -91,6 +108,37 @@ export function JoinScreen({ mode, deck, busy, error, onBack, onSubmit }: JoinSc
             className="w-full rounded-2xl border-2 border-ink bg-paper px-4 py-4 text-lg text-ink outline-none placeholder:text-ink/30 focus:ring-4 focus:ring-ink/20"
           />
         </label>
+
+        {creating ? (
+          <div>
+            <span className="display mb-2 block text-xs uppercase tracking-[0.18em] text-ink/55">
+              Dificuldade
+            </span>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {levels.map((level) => (
+                <button
+                  key={level.key}
+                  type="button"
+                  onClick={() => onDifficulty(level.key)}
+                  aria-pressed={difficulty === level.key}
+                  className={`display cursor-pointer rounded-2xl border-2 border-ink px-3 py-3 text-center transition-all duration-150 hover:-translate-y-[2px] ${
+                    difficulty === level.key
+                      ? "bg-magenta text-cream shadow-[0_5px_0_var(--color-ink)]"
+                      : "bg-paper text-ink hover:bg-sun-light"
+                  }`}
+                >
+                  <span className="block text-sm">{level.label}</span>
+                  <span className="mt-0.5 block text-[0.6rem] font-semibold opacity-70">
+                    {level.hint}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-ink/55">
+              Mais cartas na mesa deixam os intervalos menores, então a escolha fica mais difícil.
+            </p>
+          </div>
+        ) : null}
 
         {error ? (
           <p className="rounded-2xl border-2 border-ink bg-magenta-soft p-4 text-sm font-semibold text-ink">
