@@ -62,6 +62,9 @@ export function TableScreen({
   const myCards = cards
     .filter((card) => card.player_id === myId)
     .sort((a, b) => a.year - b.year);
+  const ranking = [...players].sort(
+    (a, b) => b.timeline_count - a.timeline_count || b.tokens - a.tokens || a.seat - b.seat,
+  );
 
   return (
     <Screen wide>
@@ -85,6 +88,71 @@ export function TableScreen({
       </header>
 
       <div className="mb-5">{audio}</div>
+
+      <section className="mb-5">
+        <div className="mb-2 flex items-baseline justify-between">
+          <h2 className="display text-lg text-ink">Placar</h2>
+          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-ink/45">
+            alvo: {room.target_cards} cartas
+          </span>
+        </div>
+
+        <ul className="flex flex-col gap-2">
+          {ranking.map((player, index) => {
+            const isTurn = player.id === room.turn_player_id;
+            const progress = Math.min(100, (player.timeline_count / room.target_cards) * 100);
+
+            return (
+              <li
+                key={player.id}
+                className={`rounded-2xl border-2 border-ink p-3 ${
+                  isTurn ? "bg-sun-light" : "bg-paper"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`display flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
+                      index === 0 ? "bg-magenta text-cream" : "bg-ink text-sun"
+                    }`}
+                  >
+                    {index + 1}
+                  </span>
+
+                  <span className="min-w-0 flex-1">
+                    <span className="display block truncate text-ink">
+                      {player.name}
+                      {player.id === myId ? " (você)" : ""}
+                      {isTurn ? " · jogando" : ""}
+                    </span>
+                    <span className="mt-1 flex items-center gap-2">
+                      <span className="h-2 flex-1 overflow-hidden rounded-full bg-ink/12">
+                        <span
+                          className="block h-full rounded-full bg-aqua"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </span>
+                      <span className="display shrink-0 text-xs text-ink/60">
+                        {player.timeline_count}/{room.target_cards}
+                      </span>
+                    </span>
+                  </span>
+
+                  <span className="flex shrink-0 flex-col items-end gap-1">
+                    <span className="flex gap-1">
+                      {Array.from({ length: player.tokens }, (_, slot) => (
+                        <span key={slot} className="h-3 w-3 rounded-full bg-magenta" />
+                      ))}
+                    </span>
+                    <span className="text-[0.6rem] font-semibold uppercase tracking-wider text-ink/40">
+                      {player.tokens} {player.tokens === 1 ? "ficha" : "fichas"}
+                    </span>
+                  </span>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
 
       <div
         className={`mb-5 rounded-3xl border-2 border-ink p-4 ${myTurn ? "bg-magenta text-cream" : "bg-paper text-ink"}`}
@@ -197,34 +265,7 @@ export function TableScreen({
         />
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section>
-          <h2 className="display mb-3 text-lg text-ink">Mesa</h2>
-          <ul className="flex flex-col gap-2">
-            {players.map((player) => (
-              <li
-                key={player.id}
-                className={`flex items-center gap-3 rounded-2xl border-2 border-ink p-3 ${
-                  player.id === room.turn_player_id ? "bg-sun-light" : "bg-paper"
-                }`}
-              >
-                <span className="display flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-ink text-sun">
-                  {player.timeline_count}
-                </span>
-                <span className="display min-w-0 flex-1 truncate text-ink">
-                  {player.name}
-                  {player.id === myId ? " (você)" : ""}
-                </span>
-                <span className="flex gap-1">
-                  {Array.from({ length: player.tokens }, (_, index) => (
-                    <span key={index} className="h-3 w-3 rounded-full bg-magenta" />
-                  ))}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
+      <div>
         <section>
           <h2 className="display mb-3 text-lg text-ink">Rolou agora</h2>
           <ul className="flex flex-col gap-1.5">
