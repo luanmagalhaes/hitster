@@ -48,7 +48,7 @@ Os jogadores palpitam nos próprios celulares e nunca olham aquela tela. É exat
 
 | Baralho | Músicas | O que tem dentro |
 | ------- | :-----: | ---------------- |
-| 🇧🇷 **Nacional** | 123 | Luiz Gonzaga, Tim Maia, Legião, Racionais, axé, pagode, sertanejo, Calypso, Anitta, Marina Sena |
+| 🇧🇷 **Nacional** | 123 | Da Ju Marques da seresta a Caetano — mais Tim Maia, Legião, Racionais, axé, pagode, sertanejo, Calypso, Anitta, Marina Sena |
 | 🌍 **Internacional** | 135 | Elvis, Beatles, Queen, Michael Jackson, ABBA, Nirvana, Beyoncé, Billie Eilish |
 | 🎛️ **Misto** | 258 | Os dois embaralhados |
 

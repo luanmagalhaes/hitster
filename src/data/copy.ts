@@ -17,7 +17,7 @@ export const copy = {
   decks: {
     title: "Escolha o baralho",
     national: "Nacional",
-    nationalHint: "Do Luiz Gonzaga ao piseiro",
+    nationalHint: "Da Ju Marques da seresta a Caetano",
     international: "Internacional",
     internationalHint: "Dos anos 50 aos hits de agora",
     mixed: "Misto",
