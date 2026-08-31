@@ -1,0 +1,617 @@
+[
+  {
+    "artist": "Roberto Carlos",
+    "title": "Quero Que Vá Tudo Pro Inferno",
+    "year": 1965
+  },
+  {
+    "artist": "Jorge Ben Jor",
+    "title": "Mas Que Nada",
+    "year": 1963
+  },
+  {
+    "artist": "Elis Regina",
+    "title": "Arrastão",
+    "year": 1965
+  },
+  {
+    "artist": "Caetano Veloso",
+    "title": "Alegria, Alegria",
+    "year": 1967
+  },
+  {
+    "artist": "Gilberto Gil",
+    "title": "Domingo no Parque",
+    "year": 1967
+  },
+  {
+    "artist": "Os Mutantes",
+    "title": "A Minha Menina",
+    "year": 1968
+  },
+  {
+    "artist": "Chico Buarque",
+    "title": "Construção",
+    "year": 1971
+  },
+  {
+    "artist": "Jorge Ben Jor",
+    "title": "País Tropical",
+    "year": 1969
+  },
+  {
+    "artist": "Tim Maia",
+    "title": "Azul da Cor do Mar",
+    "year": 1970
+  },
+  {
+    "artist": "Raul Seixas",
+    "title": "Metamorfose Ambulante",
+    "year": 1973
+  },
+  {
+    "artist": "Novos Baianos",
+    "title": "Preta Pretinha",
+    "year": 1972
+  },
+  {
+    "artist": "Secos & Molhados",
+    "title": "O Vira",
+    "year": 1973
+  },
+  {
+    "artist": "Tim Maia",
+    "title": "Gostava Tanto de Você",
+    "year": 1973
+  },
+  {
+    "artist": "Raul Seixas",
+    "title": "Maluco Beleza",
+    "year": 1977
+  },
+  {
+    "artist": "Belchior",
+    "title": "Como Nossos Pais",
+    "year": 1976
+  },
+  {
+    "artist": "Fagner",
+    "title": "Canteiros",
+    "year": 1973
+  },
+  {
+    "artist": "Gonzaguinha",
+    "title": "O Que É O Que É",
+    "year": 1982
+  },
+  {
+    "artist": "Djavan",
+    "title": "Flor de Lis",
+    "year": 1976
+  },
+  {
+    "artist": "Alceu Valença",
+    "title": "Anunciação",
+    "year": 1983
+  },
+  {
+    "artist": "Blitz",
+    "title": "Você Não Soube Me Amar",
+    "year": 1982
+  },
+  {
+    "artist": "Barão Vermelho",
+    "title": "Bete Balanço",
+    "year": 1984
+  },
+  {
+    "artist": "Titãs",
+    "title": "Sonífera Ilha",
+    "year": 1984
+  },
+  {
+    "artist": "Legião Urbana",
+    "title": "Será",
+    "year": 1985
+  },
+  {
+    "artist": "Ultraje a Rigor",
+    "title": "Inútil",
+    "year": 1985
+  },
+  {
+    "artist": "Kid Abelha",
+    "title": "Como Eu Quero",
+    "year": 1984
+  },
+  {
+    "artist": "RPM",
+    "title": "Olhar 43",
+    "year": 1985
+  },
+  {
+    "artist": "Legião Urbana",
+    "title": "Tempo Perdido",
+    "year": 1986
+  },
+  {
+    "artist": "Cazuza",
+    "title": "Codinome Beija-Flor",
+    "year": 1985
+  },
+  {
+    "artist": "Paralamas do Sucesso",
+    "title": "Alagados",
+    "year": 1986
+  },
+  {
+    "artist": "Titãs",
+    "title": "Comida",
+    "year": 1987
+  },
+  {
+    "artist": "Legião Urbana",
+    "title": "Faroeste Caboclo",
+    "year": 1987
+  },
+  {
+    "artist": "Cazuza",
+    "title": "O Tempo Não Para",
+    "year": 1988
+  },
+  {
+    "artist": "Engenheiros do Hawaii",
+    "title": "Infinita Highway",
+    "year": 1987
+  },
+  {
+    "artist": "Lulu Santos",
+    "title": "Como Uma Onda",
+    "year": 1983
+  },
+  {
+    "artist": "Marisa Monte",
+    "title": "Bem Que Se Quis",
+    "year": 1989
+  },
+  {
+    "artist": "Legião Urbana",
+    "title": "Pais e Filhos",
+    "year": 1989
+  },
+  {
+    "artist": "Barão Vermelho",
+    "title": "Por Você",
+    "year": 1989
+  },
+  {
+    "artist": "Sepultura",
+    "title": "Territory",
+    "year": 1993
+  },
+  {
+    "artist": "Mamonas Assassinas",
+    "title": "Pelados em Santos",
+    "year": 1995
+  },
+  {
+    "artist": "Skank",
+    "title": "Garota Nacional",
+    "year": 1996
+  },
+  {
+    "artist": "O Rappa",
+    "title": "Minha Alma",
+    "year": 2001
+  },
+  {
+    "artist": "Chico Science",
+    "title": "A Cidade",
+    "year": 1994
+  },
+  {
+    "artist": "Raimundos",
+    "title": "Mulher de Fases",
+    "year": 1997
+  },
+  {
+    "artist": "Cidade Negra",
+    "title": "Onde Você Mora?",
+    "year": 1998
+  },
+  {
+    "artist": "Jota Quest",
+    "title": "Só Hoje",
+    "year": 2002
+  },
+  {
+    "artist": "Los Hermanos",
+    "title": "Anna Júlia",
+    "year": 1999
+  },
+  {
+    "artist": "Charlie Brown Jr.",
+    "title": "Só Os Loucos Sabem",
+    "year": 2009
+  },
+  {
+    "artist": "Capital Inicial",
+    "title": "Primeiros Erros",
+    "year": 1998
+  },
+  {
+    "artist": "Pitty",
+    "title": "Admirável Chip Novo",
+    "year": 2003
+  },
+  {
+    "artist": "CPM 22",
+    "title": "Um Minuto Para o Fim do Mundo",
+    "year": 2001
+  },
+  {
+    "artist": "Detonautas",
+    "title": "Olhos Certos",
+    "year": 2002
+  },
+  {
+    "artist": "NX Zero",
+    "title": "Cedo ou Tarde",
+    "year": 2006
+  },
+  {
+    "artist": "Fresno",
+    "title": "Quebre as Correntes",
+    "year": 2005
+  },
+  {
+    "artist": "Chiclete com Banana",
+    "title": "Vem Meu Amor",
+    "year": 1997
+  },
+  {
+    "artist": "Daniela Mercury",
+    "title": "O Canto da Cidade",
+    "year": 1992
+  },
+  {
+    "artist": "Olodum",
+    "title": "Faraó Divindade do Egito",
+    "year": 1987
+  },
+  {
+    "artist": "Timbalada",
+    "title": "Beija-Flor",
+    "year": 1993
+  },
+  {
+    "artist": "Ivete Sangalo",
+    "title": "Festa",
+    "year": 2001
+  },
+  {
+    "artist": "Asa de Águia",
+    "title": "Dança do Vampiro",
+    "year": 1998
+  },
+  {
+    "artist": "Banda Eva",
+    "title": "Alô Paixão",
+    "year": 1996
+  },
+  {
+    "artist": "É o Tchan",
+    "title": "Segura o Tchan",
+    "year": 1996
+  },
+  {
+    "artist": "Fundo de Quintal",
+    "title": "O Show Tem Que Continuar",
+    "year": 1983
+  },
+  {
+    "artist": "Zeca Pagodinho",
+    "title": "Deixa a Vida Me Levar",
+    "year": 2002
+  },
+  {
+    "artist": "Exaltasamba",
+    "title": "Me Apaixonei Pela Pessoa Errada",
+    "year": 2003
+  },
+  {
+    "artist": "Raça Negra",
+    "title": "Cheia de Manias",
+    "year": 1994
+  },
+  {
+    "artist": "Só Pra Contrariar",
+    "title": "Que Se Chama Amor",
+    "year": 1997
+  },
+  {
+    "artist": "Molejo",
+    "title": "Brincadeira de Criança",
+    "year": 1995
+  },
+  {
+    "artist": "Art Popular",
+    "title": "Tapinha",
+    "year": 1997
+  },
+  {
+    "artist": "Revelação",
+    "title": "Deixa Alagar",
+    "year": 1999
+  },
+  {
+    "artist": "Chitãozinho e Xororó",
+    "title": "Evidências",
+    "year": 1990
+  },
+  {
+    "artist": "Leandro e Leonardo",
+    "title": "Pense em Mim",
+    "year": 1990
+  },
+  {
+    "artist": "Zezé Di Camargo e Luciano",
+    "title": "É o Amor",
+    "year": 1991
+  },
+  {
+    "artist": "Bruno e Marrone",
+    "title": "Dormi na Praça",
+    "year": 2000
+  },
+  {
+    "artist": "Victor e Leo",
+    "title": "Fada",
+    "year": 2007
+  },
+  {
+    "artist": "Michel Teló",
+    "title": "Ai Se Eu Te Pego",
+    "year": 2011
+  },
+  {
+    "artist": "Gusttavo Lima",
+    "title": "Balada",
+    "year": 2011
+  },
+  {
+    "artist": "Jorge e Mateus",
+    "title": "Pode Chorar",
+    "year": 2010
+  },
+  {
+    "artist": "Luan Santana",
+    "title": "Meteoro",
+    "year": 2009
+  },
+  {
+    "artist": "Marília Mendonça",
+    "title": "Infiel",
+    "year": 2016
+  },
+  {
+    "artist": "Henrique e Juliano",
+    "title": "Aquele 1%",
+    "year": 2017
+  },
+  {
+    "artist": "Wesley Safadão",
+    "title": "Camarote",
+    "year": 2016
+  },
+  {
+    "artist": "Banda Calypso",
+    "title": "Dançando Calypso",
+    "year": 2004
+  },
+  {
+    "artist": "Joelma",
+    "title": "Voando Pro Pará",
+    "year": 2016
+  },
+  {
+    "artist": "Cássia Eller",
+    "title": "Malandragem",
+    "year": 2001
+  },
+  {
+    "artist": "Tribalistas",
+    "title": "Já Sei Namorar",
+    "year": 2002
+  },
+  {
+    "artist": "Vanessa da Mata",
+    "title": "Ai, Ai, Ai",
+    "year": 2007
+  },
+  {
+    "artist": "Ana Carolina",
+    "title": "Garganta",
+    "year": 2001
+  },
+  {
+    "artist": "Maria Rita",
+    "title": "Muito Pouco",
+    "year": 2003
+  },
+  {
+    "artist": "Seu Jorge",
+    "title": "Amiga da Minha Mulher",
+    "year": 2005
+  },
+  {
+    "artist": "Nando Reis",
+    "title": "All Star",
+    "year": 2000
+  },
+  {
+    "artist": "Kid Abelha",
+    "title": "Nada Sei",
+    "year": 1988
+  },
+  {
+    "artist": "Racionais MC's",
+    "title": "Diário de um Detento",
+    "year": 1997
+  },
+  {
+    "artist": "MV Bill",
+    "title": "Soldado do Morro",
+    "year": 2002
+  },
+  {
+    "artist": "Marcelo D2",
+    "title": "À Procura da Batida Perfeita",
+    "year": 2003
+  },
+  {
+    "artist": "Emicida",
+    "title": "AmarElo",
+    "year": 2019
+  },
+  {
+    "artist": "Criolo",
+    "title": "Não Existe Amor em SP",
+    "year": 2011
+  },
+  {
+    "artist": "Anitta",
+    "title": "Show das Poderosas",
+    "year": 2013
+  },
+  {
+    "artist": "Ludmilla",
+    "title": "Cheguei",
+    "year": 2014
+  },
+  {
+    "artist": "Iza",
+    "title": "Dona de Mim",
+    "year": 2018
+  },
+  {
+    "artist": "Pabllo Vittar",
+    "title": "K.O.",
+    "year": 2017
+  },
+  {
+    "artist": "Kevinho",
+    "title": "Olha a Explosão",
+    "year": 2016
+  },
+  {
+    "artist": "MC Fioti",
+    "title": "Bum Bum Tam Tam",
+    "year": 2017
+  },
+  {
+    "artist": "Djonga",
+    "title": "Olho de Tigre",
+    "year": 2018
+  },
+  {
+    "artist": "BaianaSystem",
+    "title": "Playsom",
+    "year": 2016
+  },
+  {
+    "artist": "Liniker",
+    "title": "Zero",
+    "year": 2016
+  },
+  {
+    "artist": "Duda Beat",
+    "title": "Bixinho",
+    "year": 2018
+  },
+  {
+    "artist": "Jão",
+    "title": "Idiota",
+    "year": 2019
+  },
+  {
+    "artist": "Luísa Sonza",
+    "title": "Braba",
+    "year": 2020
+  },
+  {
+    "artist": "Marina Sena",
+    "title": "Por Supuesto",
+    "year": 2021
+  },
+  {
+    "artist": "Zeca Baleiro",
+    "title": "Telegrama",
+    "year": 1997
+  },
+  {
+    "artist": "Gabriel o Pensador",
+    "title": "Lôraburra",
+    "year": 1995
+  },
+  {
+    "artist": "Planet Hemp",
+    "title": "Legalize Já",
+    "year": 1995
+  },
+  {
+    "artist": "Ira!",
+    "title": "Flores em Você",
+    "year": 1990
+  },
+  {
+    "artist": "Biquini Cavadão",
+    "title": "Vento Ventania",
+    "year": 1986
+  },
+  {
+    "artist": "Rita Lee",
+    "title": "Ovelha Negra",
+    "year": 1975
+  },
+  {
+    "artist": "Erasmo Carlos",
+    "title": "Sentado à Beira do Caminho",
+    "year": 1969
+  },
+  {
+    "artist": "Elza Soares",
+    "title": "Mas Que Nada",
+    "year": 1963
+  },
+  {
+    "artist": "Clara Nunes",
+    "title": "Conto de Areia",
+    "year": 1974
+  },
+  {
+    "artist": "Beth Carvalho",
+    "title": "Coisinha do Pai",
+    "year": 1979
+  },
+  {
+    "artist": "Alcione",
+    "title": "Não Deixe o Samba Morrer",
+    "year": 1975
+  },
+  {
+    "artist": "Martinho da Vila",
+    "title": "Disritmia",
+    "year": 1974
+  },
+  {
+    "artist": "Dominguinhos",
+    "title": "Eu Só Quero um Xodó",
+    "year": 1973
+  },
+  {
+    "artist": "Luiz Gonzaga",
+    "title": "Asa Branca",
+    "year": 1947
+  }
+]

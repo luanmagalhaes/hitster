@@ -1,0 +1,677 @@
+[
+  {
+    "artist": "Elvis Presley",
+    "title": "Jailhouse Rock",
+    "year": 1957
+  },
+  {
+    "artist": "Chuck Berry",
+    "title": "Johnny B. Goode",
+    "year": 1958
+  },
+  {
+    "artist": "The Beatles",
+    "title": "Twist and Shout",
+    "year": 1963
+  },
+  {
+    "artist": "The Rolling Stones",
+    "title": "Satisfaction",
+    "year": 1965
+  },
+  {
+    "artist": "The Beach Boys",
+    "title": "Good Vibrations",
+    "year": 1966
+  },
+  {
+    "artist": "Aretha Franklin",
+    "title": "Respect",
+    "year": 1967
+  },
+  {
+    "artist": "The Doors",
+    "title": "Light My Fire",
+    "year": 1967
+  },
+  {
+    "artist": "The Beatles",
+    "title": "Hey Jude",
+    "year": 1968
+  },
+  {
+    "artist": "Creedence Clearwater Revival",
+    "title": "Fortunate Son",
+    "year": 1969
+  },
+  {
+    "artist": "Led Zeppelin",
+    "title": "Whole Lotta Love",
+    "year": 1969
+  },
+  {
+    "artist": "The Jackson 5",
+    "title": "I Want You Back",
+    "year": 1969
+  },
+  {
+    "artist": "John Lennon",
+    "title": "Imagine",
+    "year": 1971
+  },
+  {
+    "artist": "Led Zeppelin",
+    "title": "Stairway to Heaven",
+    "year": 1971
+  },
+  {
+    "artist": "Marvin Gaye",
+    "title": "What's Going On",
+    "year": 1971
+  },
+  {
+    "artist": "Deep Purple",
+    "title": "Smoke on the Water",
+    "year": 1972
+  },
+  {
+    "artist": "Pink Floyd",
+    "title": "Money",
+    "year": 1973
+  },
+  {
+    "artist": "Stevie Wonder",
+    "title": "Superstition",
+    "year": 1972
+  },
+  {
+    "artist": "Queen",
+    "title": "Bohemian Rhapsody",
+    "year": 1975
+  },
+  {
+    "artist": "ABBA",
+    "title": "Dancing Queen",
+    "year": 1976
+  },
+  {
+    "artist": "Eagles",
+    "title": "Hotel California",
+    "year": 1976
+  },
+  {
+    "artist": "Bee Gees",
+    "title": "Stayin' Alive",
+    "year": 1977
+  },
+  {
+    "artist": "Donna Summer",
+    "title": "I Feel Love",
+    "year": 1977
+  },
+  {
+    "artist": "Village People",
+    "title": "Y.M.C.A.",
+    "year": 1978
+  },
+  {
+    "artist": "Pink Floyd",
+    "title": "Another Brick in the Wall",
+    "year": 1979
+  },
+  {
+    "artist": "The Sugarhill Gang",
+    "title": "Rapper's Delight",
+    "year": 1979
+  },
+  {
+    "artist": "Queen",
+    "title": "Another One Bites the Dust",
+    "year": 1980
+  },
+  {
+    "artist": "AC/DC",
+    "title": "Back in Black",
+    "year": 1980
+  },
+  {
+    "artist": "Blondie",
+    "title": "Call Me",
+    "year": 1980
+  },
+  {
+    "artist": "The Police",
+    "title": "Every Little Thing She Does Is Magic",
+    "year": 1981
+  },
+  {
+    "artist": "Journey",
+    "title": "Don't Stop Believin'",
+    "year": 1981
+  },
+  {
+    "artist": "Michael Jackson",
+    "title": "Billie Jean",
+    "year": 1982
+  },
+  {
+    "artist": "Survivor",
+    "title": "Eye of the Tiger",
+    "year": 1982
+  },
+  {
+    "artist": "Culture Club",
+    "title": "Karma Chameleon",
+    "year": 1983
+  },
+  {
+    "artist": "The Police",
+    "title": "Every Breath You Take",
+    "year": 1983
+  },
+  {
+    "artist": "Cyndi Lauper",
+    "title": "Girls Just Want to Have Fun",
+    "year": 1983
+  },
+  {
+    "artist": "Wham!",
+    "title": "Wake Me Up Before You Go-Go",
+    "year": 1984
+  },
+  {
+    "artist": "Prince",
+    "title": "Purple Rain",
+    "year": 1984
+  },
+  {
+    "artist": "Tina Turner",
+    "title": "What's Love Got to Do with It",
+    "year": 1984
+  },
+  {
+    "artist": "a-ha",
+    "title": "Take On Me",
+    "year": 1985
+  },
+  {
+    "artist": "Dire Straits",
+    "title": "Money for Nothing",
+    "year": 1985
+  },
+  {
+    "artist": "Bon Jovi",
+    "title": "Livin' on a Prayer",
+    "year": 1986
+  },
+  {
+    "artist": "Europe",
+    "title": "The Final Countdown",
+    "year": 1986
+  },
+  {
+    "artist": "Whitney Houston",
+    "title": "I Wanna Dance with Somebody",
+    "year": 1987
+  },
+  {
+    "artist": "Guns N' Roses",
+    "title": "Sweet Child O' Mine",
+    "year": 1987
+  },
+  {
+    "artist": "Rick Astley",
+    "title": "Never Gonna Give You Up",
+    "year": 1987
+  },
+  {
+    "artist": "U2",
+    "title": "With or Without You",
+    "year": 1987
+  },
+  {
+    "artist": "Roxette",
+    "title": "The Look",
+    "year": 1989
+  },
+  {
+    "artist": "Madonna",
+    "title": "Like a Prayer",
+    "year": 1989
+  },
+  {
+    "artist": "Sinéad O'Connor",
+    "title": "Nothing Compares 2 U",
+    "year": 1990
+  },
+  {
+    "artist": "Nirvana",
+    "title": "Smells Like Teen Spirit",
+    "year": 1991
+  },
+  {
+    "artist": "Metallica",
+    "title": "Enter Sandman",
+    "year": 1991
+  },
+  {
+    "artist": "R.E.M.",
+    "title": "Losing My Religion",
+    "year": 1991
+  },
+  {
+    "artist": "Whitney Houston",
+    "title": "I Will Always Love You",
+    "year": 1992
+  },
+  {
+    "artist": "Dr. Dre",
+    "title": "Nuthin' but a G Thang",
+    "year": 1992
+  },
+  {
+    "artist": "Snoop Dogg",
+    "title": "Gin and Juice",
+    "year": 1993
+  },
+  {
+    "artist": "Ace of Base",
+    "title": "All That She Wants",
+    "year": 1992
+  },
+  {
+    "artist": "Green Day",
+    "title": "Basket Case",
+    "year": 1994
+  },
+  {
+    "artist": "Oasis",
+    "title": "Wonderwall",
+    "year": 1995
+  },
+  {
+    "artist": "Alanis Morissette",
+    "title": "Ironic",
+    "year": 1995
+  },
+  {
+    "artist": "Coolio",
+    "title": "Gangsta's Paradise",
+    "year": 1995
+  },
+  {
+    "artist": "Los del Río",
+    "title": "Macarena",
+    "year": 1993
+  },
+  {
+    "artist": "Spice Girls",
+    "title": "Wannabe",
+    "year": 1996
+  },
+  {
+    "artist": "The Verve",
+    "title": "Bitter Sweet Symphony",
+    "year": 1997
+  },
+  {
+    "artist": "Aqua",
+    "title": "Barbie Girl",
+    "year": 1997
+  },
+  {
+    "artist": "Céline Dion",
+    "title": "My Heart Will Go On",
+    "year": 1997
+  },
+  {
+    "artist": "Cher",
+    "title": "Believe",
+    "year": 1998
+  },
+  {
+    "artist": "Britney Spears",
+    "title": "Baby One More Time",
+    "year": 1998
+  },
+  {
+    "artist": "Backstreet Boys",
+    "title": "I Want It That Way",
+    "year": 1999
+  },
+  {
+    "artist": "Ricky Martin",
+    "title": "Livin' la Vida Loca",
+    "year": 1999
+  },
+  {
+    "artist": "Santana",
+    "title": "Smooth",
+    "year": 1999
+  },
+  {
+    "artist": "Eminem",
+    "title": "The Real Slim Shady",
+    "year": 2000
+  },
+  {
+    "artist": "Destiny's Child",
+    "title": "Survivor",
+    "year": 2001
+  },
+  {
+    "artist": "Gorillaz",
+    "title": "Clint Eastwood",
+    "year": 2001
+  },
+  {
+    "artist": "Linkin Park",
+    "title": "In the End",
+    "year": 2001
+  },
+  {
+    "artist": "Shakira",
+    "title": "Whenever, Wherever",
+    "year": 2001
+  },
+  {
+    "artist": "Nelly",
+    "title": "Hot in Herre",
+    "year": 2002
+  },
+  {
+    "artist": "Coldplay",
+    "title": "Clocks",
+    "year": 2002
+  },
+  {
+    "artist": "50 Cent",
+    "title": "In Da Club",
+    "year": 2003
+  },
+  {
+    "artist": "The White Stripes",
+    "title": "Seven Nation Army",
+    "year": 2003
+  },
+  {
+    "artist": "Outkast",
+    "title": "Hey Ya!",
+    "year": 2003
+  },
+  {
+    "artist": "Usher",
+    "title": "Yeah!",
+    "year": 2004
+  },
+  {
+    "artist": "Green Day",
+    "title": "American Idiot",
+    "year": 2004
+  },
+  {
+    "artist": "Gwen Stefani",
+    "title": "Hollaback Girl",
+    "year": 2005
+  },
+  {
+    "artist": "Rihanna",
+    "title": "Umbrella",
+    "year": 2007
+  },
+  {
+    "artist": "Amy Winehouse",
+    "title": "Rehab",
+    "year": 2006
+  },
+  {
+    "artist": "Gnarls Barkley",
+    "title": "Crazy",
+    "year": 2006
+  },
+  {
+    "artist": "Beyoncé",
+    "title": "Single Ladies",
+    "year": 2008
+  },
+  {
+    "artist": "Lady Gaga",
+    "title": "Poker Face",
+    "year": 2008
+  },
+  {
+    "artist": "Kings of Leon",
+    "title": "Sex on Fire",
+    "year": 2008
+  },
+  {
+    "artist": "Black Eyed Peas",
+    "title": "I Gotta Feeling",
+    "year": 2009
+  },
+  {
+    "artist": "Katy Perry",
+    "title": "Firework",
+    "year": 2010
+  },
+  {
+    "artist": "Bruno Mars",
+    "title": "Just the Way You Are",
+    "year": 2010
+  },
+  {
+    "artist": "Adele",
+    "title": "Rolling in the Deep",
+    "year": 2010
+  },
+  {
+    "artist": "LMFAO",
+    "title": "Party Rock Anthem",
+    "year": 2011
+  },
+  {
+    "artist": "Gotye",
+    "title": "Somebody That I Used to Know",
+    "year": 2011
+  },
+  {
+    "artist": "Carly Rae Jepsen",
+    "title": "Call Me Maybe",
+    "year": 2012
+  },
+  {
+    "artist": "Psy",
+    "title": "Gangnam Style",
+    "year": 2012
+  },
+  {
+    "artist": "Daft Punk",
+    "title": "Get Lucky",
+    "year": 2013
+  },
+  {
+    "artist": "Avicii",
+    "title": "Wake Me Up",
+    "year": 2013
+  },
+  {
+    "artist": "Pharrell Williams",
+    "title": "Happy",
+    "year": 2013
+  },
+  {
+    "artist": "Mark Ronson",
+    "title": "Uptown Funk",
+    "year": 2014
+  },
+  {
+    "artist": "Ed Sheeran",
+    "title": "Thinking Out Loud",
+    "year": 2014
+  },
+  {
+    "artist": "Major Lazer",
+    "title": "Lean On",
+    "year": 2015
+  },
+  {
+    "artist": "Adele",
+    "title": "Hello",
+    "year": 2015
+  },
+  {
+    "artist": "Drake",
+    "title": "One Dance",
+    "year": 2016
+  },
+  {
+    "artist": "The Chainsmokers",
+    "title": "Closer",
+    "year": 2016
+  },
+  {
+    "artist": "Luis Fonsi",
+    "title": "Despacito",
+    "year": 2017
+  },
+  {
+    "artist": "Ed Sheeran",
+    "title": "Shape of You",
+    "year": 2017
+  },
+  {
+    "artist": "Post Malone",
+    "title": "Rockstar",
+    "year": 2017
+  },
+  {
+    "artist": "Camila Cabello",
+    "title": "Havana",
+    "year": 2017
+  },
+  {
+    "artist": "Billie Eilish",
+    "title": "Bad Guy",
+    "year": 2019
+  },
+  {
+    "artist": "Lil Nas X",
+    "title": "Old Town Road",
+    "year": 2019
+  },
+  {
+    "artist": "The Weeknd",
+    "title": "Blinding Lights",
+    "year": 2019
+  },
+  {
+    "artist": "Dua Lipa",
+    "title": "Don't Start Now",
+    "year": 2019
+  },
+  {
+    "artist": "Harry Styles",
+    "title": "Watermelon Sugar",
+    "year": 2019
+  },
+  {
+    "artist": "Olivia Rodrigo",
+    "title": "Drivers License",
+    "year": 2021
+  },
+  {
+    "artist": "Bad Bunny",
+    "title": "Tití Me Preguntó",
+    "year": 2022
+  },
+  {
+    "artist": "Miley Cyrus",
+    "title": "Flowers",
+    "year": 2023
+  },
+  {
+    "artist": "Taylor Swift",
+    "title": "Anti-Hero",
+    "year": 2022
+  },
+  {
+    "artist": "Sabrina Carpenter",
+    "title": "Espresso",
+    "year": 2024
+  },
+  {
+    "artist": "Michael Jackson",
+    "title": "Thriller",
+    "year": 1982
+  },
+  {
+    "artist": "Toto",
+    "title": "Africa",
+    "year": 1982
+  },
+  {
+    "artist": "Bob Marley",
+    "title": "Could You Be Loved",
+    "year": 1980
+  },
+  {
+    "artist": "The Clash",
+    "title": "Should I Stay or Should I Go",
+    "year": 1982
+  },
+  {
+    "artist": "Talking Heads",
+    "title": "Once in a Lifetime",
+    "year": 1980
+  },
+  {
+    "artist": "New Order",
+    "title": "Blue Monday",
+    "year": 1983
+  },
+  {
+    "artist": "Depeche Mode",
+    "title": "Personal Jesus",
+    "year": 1989
+  },
+  {
+    "artist": "The Cure",
+    "title": "Friday I'm in Love",
+    "year": 1992
+  },
+  {
+    "artist": "Radiohead",
+    "title": "Creep",
+    "year": 1992
+  },
+  {
+    "artist": "Red Hot Chili Peppers",
+    "title": "Californication",
+    "year": 1999
+  },
+  {
+    "artist": "System of a Down",
+    "title": "Chop Suey!",
+    "year": 2001
+  },
+  {
+    "artist": "The Killers",
+    "title": "Mr. Brightside",
+    "year": 2004
+  },
+  {
+    "artist": "Arctic Monkeys",
+    "title": "Do I Wanna Know?",
+    "year": 2013
+  },
+  {
+    "artist": "Stevie Wonder",
+    "title": "I Just Called to Say I Love You",
+    "year": 1984
+  },
+  {
+    "artist": "Lionel Richie",
+    "title": "Hello",
+    "year": 1984
+  }
+]
