@@ -9,6 +9,7 @@ import {
   nextSeat,
 } from "@/lib/game/timeline";
 import { serverClient } from "@/lib/supabase/server";
+import { serverVersion } from "@/lib/version";
 import { shuffle } from "@/utils/shuffle";
 import type { DeckKind } from "@/types/track";
 import { RoomPhase, type PlayerRow, type RoomRow } from "@/types/room";
@@ -566,6 +567,7 @@ export async function roomState(input: { code: string; token?: string }) {
     events: events ?? [],
     remaining: remaining ?? 0,
     meId: me?.id ?? null,
+    version: serverVersion(),
   };
 }
 

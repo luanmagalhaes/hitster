@@ -36,6 +36,7 @@ export interface RoomState {
   events: EventRow[];
   remaining: number;
   meId: string | null;
+  version: string;
 }
 
 export interface GuessResult {

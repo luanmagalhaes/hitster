@@ -5,10 +5,12 @@ import { AudioDeck } from "@/components/game/AudioDeck";
 import { HomeScreen } from "@/components/game/HomeScreen";
 import { ResultModal } from "@/components/game/ResultModal";
 import { TimeoutModal } from "@/components/game/TimeoutModal";
+import { UpdateBanner } from "@/components/game/UpdateBanner";
 import { JoinScreen } from "@/components/game/JoinScreen";
 import { LobbyScreen } from "@/components/game/LobbyScreen";
 import { TableScreen } from "@/components/game/TableScreen";
 import { VictoryScreen } from "@/components/game/VictoryScreen";
+import { useLiveVersion } from "@/hooks/useLiveVersion";
 import { useRoom } from "@/hooks/useRoom";
 import { useSession } from "@/hooks/useSession";
 import { api } from "@/lib/api";
@@ -28,6 +30,7 @@ export function GameApp() {
   const [timeoutNotice, setTimeoutNotice] = useState<{ from: string; to: string } | null>(null);
 
   const { state, refresh } = useRoom(session?.code ?? null, session?.accessToken ?? null);
+  const live = useLiveVersion(state?.version);
 
   useEffect(() => {
     if (!error) {
@@ -223,6 +226,8 @@ export function GameApp() {
 
   return (
     <>
+      {live.stale ? <UpdateBanner onReload={live.reloadNow} /> : null}
+
       {visibleResult ? (
         <ResultModal
           result={visibleResult}
