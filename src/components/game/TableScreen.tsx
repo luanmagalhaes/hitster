@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { TimelineBoard } from "@/components/game/TimelineBoard";
 import { Button } from "@/components/ui/Button";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Screen } from "@/components/ui/Screen";
 import { Wordmark } from "@/components/ui/Wordmark";
 import type { EventRow, PlayerRow, RoomRow, TimelineCardRow } from "@/types/room";
@@ -87,8 +88,48 @@ export function TableScreen({
     (a, b) => b.timeline_count - a.timeline_count || b.tokens - a.tokens || a.seat - b.seat,
   );
 
+  const pendingRemoval = players.find((player) => player.id === confirmingRemoval);
+
   return (
     <Screen wide>
+      {pendingRemoval ? (
+        <ConfirmModal
+          title={`Tirar ${pendingRemoval.name} da mesa?`}
+          tone="danger"
+          busy={busy}
+          confirmLabel="Tirar da mesa"
+          cancelLabel="Deixa quieto"
+          body={
+            <>
+              <p>
+                <strong className="text-ink">{pendingRemoval.name}</strong> sai da partida na hora e
+                não consegue voltar para esta sala.
+              </p>
+              <ul className="mt-3 flex flex-col gap-1.5 text-xs">
+                <li className="rounded-xl bg-sun-light px-3 py-2">
+                  As {pendingRemoval.timeline_count} cartas voltam para o monte
+                </li>
+                {pendingRemoval.id === room.turn_player_id ? (
+                  <li className="rounded-xl bg-sun-light px-3 py-2">
+                    Era a vez dela, então a vez passa para o próximo
+                  </li>
+                ) : null}
+                {players.length === 2 ? (
+                  <li className="rounded-xl bg-magenta-soft px-3 py-2 font-semibold">
+                    Vocês ficam só você na mesa, então a partida encerra
+                  </li>
+                ) : null}
+              </ul>
+            </>
+          }
+          onCancel={() => setConfirmingRemoval(null)}
+          onConfirm={() => {
+            onRemovePlayer(pendingRemoval.id);
+            setConfirmingRemoval(null);
+          }}
+        />
+      ) : null}
+
       <header className="mb-5 flex items-center justify-between gap-3">
         <button
           type="button"
@@ -198,34 +239,6 @@ export function TableScreen({
                   ) : null}
                 </div>
 
-                {confirmingRemoval === player.id ? (
-                  <div className="mt-3 rounded-xl border-2 border-ink bg-magenta-soft p-3">
-                    <p className="text-xs font-semibold text-ink">
-                      Tirar {player.name} da partida? As cartas dela voltam para o monte e o jogo
-                      segue.
-                    </p>
-                    <div className="mt-2 flex gap-2">
-                      <Button
-                        variant="ghost"
-                        fullWidth
-                        onClick={() => setConfirmingRemoval(null)}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button
-                        variant="magenta"
-                        fullWidth
-                        disabled={busy}
-                        onClick={() => {
-                          onRemovePlayer(player.id);
-                          setConfirmingRemoval(null);
-                        }}
-                      >
-                        Tirar da mesa
-                      </Button>
-                    </div>
-                  </div>
-                ) : null}
               </li>
             );
           })}

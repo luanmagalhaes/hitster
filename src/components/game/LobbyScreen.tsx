@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { Screen } from "@/components/ui/Screen";
 import { Wordmark } from "@/components/ui/Wordmark";
 import { copy } from "@/data/copy";
@@ -39,6 +40,7 @@ export function LobbyScreen({
   onLeave,
 }: LobbyScreenProps) {
   const [copied, setCopied] = useState(false);
+  const [confirmingStart, setConfirmingStart] = useState(false);
   const enough = players.length >= 2;
 
   const copyCode = async () => {
@@ -56,7 +58,13 @@ export function LobbyScreen({
       wide
       footer={
         isHost ? (
-          <Button variant="ink" size="lg" fullWidth disabled={busy || !enough} onClick={onStart}>
+          <Button
+            variant="ink"
+            size="lg"
+            fullWidth
+            disabled={busy || !enough}
+            onClick={() => setConfirmingStart(true)}
+          >
             {enough ? "Começar a partida" : "Precisa de mais um jogador"}
           </Button>
         ) : (
@@ -66,6 +74,41 @@ export function LobbyScreen({
         )
       }
     >
+      {confirmingStart ? (
+        <ConfirmModal
+          title="Começar a partida?"
+          tone="go"
+          busy={busy}
+          confirmLabel="Bora jogar"
+          cancelLabel="Ainda não"
+          body={
+            <>
+              <p>
+                A mesa fecha com <strong className="text-ink">{players.length} jogadores</strong>.
+                Quem chegar depois não consegue mais entrar nesta sala.
+              </p>
+              <ul className="mt-3 flex flex-col gap-1.5 text-xs">
+                <li className="rounded-xl bg-sun-light px-3 py-2">
+                  Cada um recebe {room.seed_cards} carta{room.seed_cards > 1 ? "s" : ""} para
+                  começar
+                </li>
+                <li className="rounded-xl bg-sun-light px-3 py-2">
+                  Ganha quem fechar {room.target_cards} cartas na ordem certa
+                </li>
+                <li className="rounded-xl bg-sun-light px-3 py-2">
+                  Quem demorar mais de 1 minuto na vez perde a rodada
+                </li>
+              </ul>
+            </>
+          }
+          onCancel={() => setConfirmingStart(false)}
+          onConfirm={() => {
+            setConfirmingStart(false);
+            onStart();
+          }}
+        />
+      ) : null}
+
       <header className="mb-6 flex items-center justify-between">
         <button
           type="button"
