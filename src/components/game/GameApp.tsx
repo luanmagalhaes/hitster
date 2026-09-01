@@ -183,7 +183,7 @@ export function GameApp() {
       <HomeScreen
         deck={deck}
         onDeck={setDeck}
-        seats={seats()}
+        seats={seats}
         onResume={(seat) =>
           save({
             code: seat.code,

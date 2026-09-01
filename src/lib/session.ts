@@ -52,6 +52,12 @@ export interface RecentSeat {
   savedAt: number;
 }
 
+const seatListeners = new Set<() => void>();
+const emptySeats: RecentSeat[] = [];
+
+let cachedSeatsRaw: string | null = null;
+let cachedSeats: RecentSeat[] = emptySeats;
+
 function readRecent(): RecentSeat[] {
   try {
     const raw = window.localStorage.getItem(recentKey);
@@ -69,10 +75,43 @@ function writeRecent(seats: RecentSeat[]) {
   } catch {
     return;
   }
+
+  seatListeners.forEach((listener) => listener());
+}
+
+export function subscribeSeats(listener: () => void): () => void {
+  seatListeners.add(listener);
+  window.addEventListener("storage", listener);
+
+  return () => {
+    seatListeners.delete(listener);
+    window.removeEventListener("storage", listener);
+  };
+}
+
+export function seatsSnapshot(): RecentSeat[] {
+  let raw: string | null = null;
+
+  try {
+    raw = window.localStorage.getItem(recentKey);
+  } catch {
+    raw = null;
+  }
+
+  if (raw !== cachedSeatsRaw) {
+    cachedSeatsRaw = raw;
+    cachedSeats = readRecent().sort((a, b) => b.savedAt - a.savedAt);
+  }
+
+  return cachedSeats;
+}
+
+export function serverSeatsSnapshot(): RecentSeat[] {
+  return emptySeats;
 }
 
 export function recentSeats(): RecentSeat[] {
-  return readRecent().sort((a, b) => b.savedAt - a.savedAt);
+  return seatsSnapshot();
 }
 
 export function rememberSeat(session: Session) {
@@ -108,7 +147,6 @@ export function seatFor(code: string, name: string): RecentSeat | null {
 
 export function forgetSeat(code: string) {
   writeRecent(readRecent().filter((seat) => seat.code !== code.toUpperCase()));
-  listeners.forEach((listener) => listener());
 }
 
 export function subscribeSession(listener: () => void): () => void {
