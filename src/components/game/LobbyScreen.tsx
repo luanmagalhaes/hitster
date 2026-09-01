@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { cards } from "@/utils/plural";
 import { Screen } from "@/components/ui/Screen";
 import { Wordmark } from "@/components/ui/Wordmark";
 import { copy } from "@/data/copy";
@@ -89,11 +90,10 @@ export function LobbyScreen({
               </p>
               <ul className="mt-3 flex flex-col gap-1.5 text-xs">
                 <li className="rounded-xl bg-sun-light px-3 py-2">
-                  Cada um recebe {room.seed_cards} carta{room.seed_cards > 1 ? "s" : ""} para
-                  começar
+                  Cada um recebe {cards(room.seed_cards)} para começar
                 </li>
                 <li className="rounded-xl bg-sun-light px-3 py-2">
-                  Ganha quem fechar {room.target_cards} cartas na ordem certa
+                  Ganha quem fechar {cards(room.target_cards)} na ordem certa
                 </li>
                 <li className="rounded-xl bg-sun-light px-3 py-2">
                   Quem demorar mais de 1 minuto na vez perde a rodada
@@ -165,8 +165,7 @@ export function LobbyScreen({
 
           <p className="mt-4 rounded-2xl border-2 border-ink bg-sun-light p-3 text-xs font-semibold text-ink/70">
             {modeLabels[room.difficulty] ?? room.difficulty} · baralho {deckLabels[room.deck] ?? room.deck} ·{" "}
-            {room.seed_cards} carta{room.seed_cards > 1 ? "s" : ""} de saída · alvo{" "}
-            {room.target_cards}
+            {cards(room.seed_cards)} de saída · alvo {room.target_cards}
           </p>
 
           {error ? (

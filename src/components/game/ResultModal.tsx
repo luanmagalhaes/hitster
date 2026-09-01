@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/Button";
 import { Vinyl } from "@/components/ui/Vinyl";
 import type { GuessResult } from "@/lib/api";
+import { tokens } from "@/utils/plural";
 
 interface ResultModalProps {
   result: GuessResult;
@@ -129,9 +130,7 @@ export function ResultModal({ result, playerName, onClose }: ResultModalProps) {
                     </span>
                   ))}
                 </span>
-                <span className="display mt-2 block text-2xl">
-                  +{result.earnedTokens} ficha{result.earnedTokens > 1 ? "s" : ""}
-                </span>
+                <span className="display mt-2 block text-2xl">+{tokens(result.earnedTokens)}</span>
               </div>
               <span className="block bg-paper px-3 py-2 text-xs font-semibold leading-snug text-ink/75">
                 {result.bonusReason}

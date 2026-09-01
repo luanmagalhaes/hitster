@@ -457,7 +457,7 @@ export async function submitGuess(input: {
       ? `pôs ${labelForSlot(years, input.slotIndex)} e acertou`
       : `pôs ${labelForSlot(years, input.slotIndex)}, mas ${track.year} fica ${labelForSlot(years, rightSlot)}`,
     earnedTokens > 0
-      ? `+${earnedTokens} ficha${earnedTokens > 1 ? "s" : ""}`
+      ? `+${earnedTokens} ${earnedTokens === 1 ? "ficha" : "fichas"}`
       : null,
   ]
     .filter(Boolean)
@@ -616,7 +616,7 @@ export async function spendTokens(input: { code: string; token: string }) {
 
   if (me.tokens < room.token_cost) {
     throw new ServiceError(
-      `você precisa de ${room.token_cost} fichas e tem ${me.tokens}`,
+      `você precisa de ${room.token_cost} fichas e tem ${me.tokens === 1 ? "1 ficha" : `${me.tokens} fichas`}`,
       409,
     );
   }

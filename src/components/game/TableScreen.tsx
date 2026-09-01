@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { TimelineBoard } from "@/components/game/TimelineBoard";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { cards as cardCount, tokens } from "@/utils/plural";
 import { Screen } from "@/components/ui/Screen";
 import { Wordmark } from "@/components/ui/Wordmark";
 import type { EventRow, PlayerRow, RoomRow, TimelineCardRow } from "@/types/room";
@@ -107,7 +108,7 @@ export function TableScreen({
               </p>
               <ul className="mt-3 flex flex-col gap-1.5 text-xs">
                 <li className="rounded-xl bg-sun-light px-3 py-2">
-                  As {pendingRemoval.timeline_count} cartas voltam para o monte
+                  {cardCount(pendingRemoval.timeline_count)} voltam para o monte
                 </li>
                 {pendingRemoval.id === room.turn_player_id ? (
                   <li className="rounded-xl bg-sun-light px-3 py-2">
@@ -154,14 +155,14 @@ export function TableScreen({
       {me && me.tokens >= room.token_cost ? (
         <div className="mb-5 rounded-3xl border-2 border-ink bg-aqua p-4 text-ink">
           <span className="display block text-base">
-            Você tem {me.tokens} fichas
+            Você tem {tokens(me.tokens)}
           </span>
           <span className="mt-1 block text-sm opacity-80">
-            Dá para trocar {room.token_cost} fichas por uma carta na posição certa, de graça.
+            Dá para trocar {tokens(room.token_cost)} por uma carta na posição certa, de graça.
           </span>
           <div className="mt-3">
             <Button variant="ink" fullWidth disabled={busy} onClick={onSpendTokens}>
-              {busy ? "Trocando..." : `Trocar ${room.token_cost} fichas por 1 carta`}
+              {busy ? "Trocando..." : `Trocar ${tokens(room.token_cost)} por 1 carta`}
             </Button>
           </div>
         </div>
@@ -222,7 +223,7 @@ export function TableScreen({
                       ))}
                     </span>
                     <span className="text-[0.6rem] font-semibold uppercase tracking-wider text-ink/40">
-                      {player.tokens} {player.tokens === 1 ? "ficha" : "fichas"}
+                      {tokens(player.tokens)}
                     </span>
                   </span>
 
