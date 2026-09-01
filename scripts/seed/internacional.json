@@ -673,5 +673,530 @@
     "artist": "Lionel Richie",
     "title": "Hello",
     "year": 1984
+  },
+  {
+    "artist": "The Beatles",
+    "title": "Let It Be",
+    "year": 1970
+  },
+  {
+    "artist": "The Beatles",
+    "title": "Come Together",
+    "year": 1969
+  },
+  {
+    "artist": "The Rolling Stones",
+    "title": "Paint It Black",
+    "year": 1966
+  },
+  {
+    "artist": "Simon & Garfunkel",
+    "title": "The Sound of Silence",
+    "year": 1964
+  },
+  {
+    "artist": "Bob Dylan",
+    "title": "Like a Rolling Stone",
+    "year": 1965
+  },
+  {
+    "artist": "The Who",
+    "title": "Baba O'Riley",
+    "year": 1971
+  },
+  {
+    "artist": "David Bowie",
+    "title": "Space Oddity",
+    "year": 1969
+  },
+  {
+    "artist": "David Bowie",
+    "title": "Heroes",
+    "year": 1977
+  },
+  {
+    "artist": "Elton John",
+    "title": "Rocket Man",
+    "year": 1972
+  },
+  {
+    "artist": "Pink Floyd",
+    "title": "Wish You Were Here",
+    "year": 1975
+  },
+  {
+    "artist": "Fleetwood Mac",
+    "title": "Dreams",
+    "year": 1977
+  },
+  {
+    "artist": "The Ramones",
+    "title": "Blitzkrieg Bop",
+    "year": 1976
+  },
+  {
+    "artist": "Sex Pistols",
+    "title": "Anarchy in the U.K.",
+    "year": 1976
+  },
+  {
+    "artist": "Kiss",
+    "title": "I Was Made for Lovin' You",
+    "year": 1979
+  },
+  {
+    "artist": "Chic",
+    "title": "Le Freak",
+    "year": 1978
+  },
+  {
+    "artist": "Earth, Wind & Fire",
+    "title": "September",
+    "year": 1978
+  },
+  {
+    "artist": "Kool & The Gang",
+    "title": "Celebration",
+    "year": 1980
+  },
+  {
+    "artist": "Diana Ross",
+    "title": "I'm Coming Out",
+    "year": 1980
+  },
+  {
+    "artist": "The Buggles",
+    "title": "Video Killed the Radio Star",
+    "year": 1979
+  },
+  {
+    "artist": "Joy Division",
+    "title": "Love Will Tear Us Apart",
+    "year": 1980
+  },
+  {
+    "artist": "The Smiths",
+    "title": "There Is a Light That Never Goes Out",
+    "year": 1986
+  },
+  {
+    "artist": "Duran Duran",
+    "title": "Hungry Like the Wolf",
+    "year": 1982
+  },
+  {
+    "artist": "Tears for Fears",
+    "title": "Everybody Wants to Rule the World",
+    "year": 1985
+  },
+  {
+    "artist": "Simple Minds",
+    "title": "Don't You Forget About Me",
+    "year": 1985
+  },
+  {
+    "artist": "Iron Maiden",
+    "title": "The Trooper",
+    "year": 1983
+  },
+  {
+    "artist": "Metallica",
+    "title": "Master of Puppets",
+    "year": 1986
+  },
+  {
+    "artist": "Guns N' Roses",
+    "title": "November Rain",
+    "year": 1991
+  },
+  {
+    "artist": "Bon Jovi",
+    "title": "It's My Life",
+    "year": 2000
+  },
+  {
+    "artist": "Aerosmith",
+    "title": "I Don't Want to Miss a Thing",
+    "year": 1998
+  },
+  {
+    "artist": "Bryan Adams",
+    "title": "Summer of '69",
+    "year": 1984
+  },
+  {
+    "artist": "Phil Collins",
+    "title": "In the Air Tonight",
+    "year": 1981
+  },
+  {
+    "artist": "George Michael",
+    "title": "Careless Whisper",
+    "year": 1984
+  },
+  {
+    "artist": "Prince",
+    "title": "Kiss",
+    "year": 1986
+  },
+  {
+    "artist": "Janet Jackson",
+    "title": "Rhythm Nation",
+    "year": 1989
+  },
+  {
+    "artist": "Michael Jackson",
+    "title": "Beat It",
+    "year": 1982
+  },
+  {
+    "artist": "Michael Jackson",
+    "title": "Smooth Criminal",
+    "year": 1987
+  },
+  {
+    "artist": "Madonna",
+    "title": "Material Girl",
+    "year": 1984
+  },
+  {
+    "artist": "Madonna",
+    "title": "Vogue",
+    "year": 1990
+  },
+  {
+    "artist": "Pearl Jam",
+    "title": "Alive",
+    "year": 1991
+  },
+  {
+    "artist": "Soundgarden",
+    "title": "Black Hole Sun",
+    "year": 1994
+  },
+  {
+    "artist": "Red Hot Chili Peppers",
+    "title": "Under the Bridge",
+    "year": 1991
+  },
+  {
+    "artist": "Radiohead",
+    "title": "Karma Police",
+    "year": 1997
+  },
+  {
+    "artist": "Blur",
+    "title": "Song 2",
+    "year": 1997
+  },
+  {
+    "artist": "Oasis",
+    "title": "Don't Look Back in Anger",
+    "year": 1995
+  },
+  {
+    "artist": "The Cranberries",
+    "title": "Zombie",
+    "year": 1994
+  },
+  {
+    "artist": "No Doubt",
+    "title": "Don't Speak",
+    "year": 1996
+  },
+  {
+    "artist": "TLC",
+    "title": "Waterfalls",
+    "year": 1994
+  },
+  {
+    "artist": "Backstreet Boys",
+    "title": "Everybody",
+    "year": 1997
+  },
+  {
+    "artist": "NSYNC",
+    "title": "Bye Bye Bye",
+    "year": 2000
+  },
+  {
+    "artist": "Christina Aguilera",
+    "title": "Genie in a Bottle",
+    "year": 1999
+  },
+  {
+    "artist": "Britney Spears",
+    "title": "Toxic",
+    "year": 2003
+  },
+  {
+    "artist": "Nelly Furtado",
+    "title": "Say It Right",
+    "year": 2006
+  },
+  {
+    "artist": "Justin Timberlake",
+    "title": "SexyBack",
+    "year": 2006
+  },
+  {
+    "artist": "Kanye West",
+    "title": "Stronger",
+    "year": 2007
+  },
+  {
+    "artist": "Jay-Z",
+    "title": "Empire State of Mind",
+    "year": 2009
+  },
+  {
+    "artist": "Rihanna",
+    "title": "Diamonds",
+    "year": 2012
+  },
+  {
+    "artist": "Katy Perry",
+    "title": "Roar",
+    "year": 2013
+  },
+  {
+    "artist": "Maroon 5",
+    "title": "Moves Like Jagger",
+    "year": 2011
+  },
+  {
+    "artist": "Imagine Dragons",
+    "title": "Radioactive",
+    "year": 2012
+  },
+  {
+    "artist": "OneRepublic",
+    "title": "Counting Stars",
+    "year": 2013
+  },
+  {
+    "artist": "Sam Smith",
+    "title": "Stay With Me",
+    "year": 2014
+  },
+  {
+    "artist": "Hozier",
+    "title": "Take Me to Church",
+    "year": 2013
+  },
+  {
+    "artist": "Sia",
+    "title": "Chandelier",
+    "year": 2014
+  },
+  {
+    "artist": "The Weeknd",
+    "title": "Can't Feel My Face",
+    "year": 2015
+  },
+  {
+    "artist": "Justin Bieber",
+    "title": "Sorry",
+    "year": 2015
+  },
+  {
+    "artist": "Twenty One Pilots",
+    "title": "Stressed Out",
+    "year": 2015
+  },
+  {
+    "artist": "Shawn Mendes",
+    "title": "Stitches",
+    "year": 2015
+  },
+  {
+    "artist": "Dua Lipa",
+    "title": "New Rules",
+    "year": 2017
+  },
+  {
+    "artist": "Billie Eilish",
+    "title": "Ocean Eyes",
+    "year": 2016
+  },
+  {
+    "artist": "Lewis Capaldi",
+    "title": "Someone You Loved",
+    "year": 2018
+  },
+  {
+    "artist": "Lizzo",
+    "title": "Truth Hurts",
+    "year": 2017
+  },
+  {
+    "artist": "Doja Cat",
+    "title": "Say So",
+    "year": 2019
+  },
+  {
+    "artist": "Harry Styles",
+    "title": "As It Was",
+    "year": 2022
+  },
+  {
+    "artist": "Taylor Swift",
+    "title": "Shake It Off",
+    "year": 2014
+  },
+  {
+    "artist": "Taylor Swift",
+    "title": "Blank Space",
+    "year": 2014
+  },
+  {
+    "artist": "Beyoncé",
+    "title": "Crazy in Love",
+    "year": 2003
+  },
+  {
+    "artist": "Beyoncé",
+    "title": "Halo",
+    "year": 2008
+  },
+  {
+    "artist": "Lady Gaga",
+    "title": "Bad Romance",
+    "year": 2009
+  },
+  {
+    "artist": "Lady Gaga",
+    "title": "Shallow",
+    "year": 2018
+  },
+  {
+    "artist": "Bruno Mars",
+    "title": "Locked Out of Heaven",
+    "year": 2012
+  },
+  {
+    "artist": "Bruno Mars",
+    "title": "24K Magic",
+    "year": 2016
+  },
+  {
+    "artist": "Coldplay",
+    "title": "Viva La Vida",
+    "year": 2008
+  },
+  {
+    "artist": "Coldplay",
+    "title": "Yellow",
+    "year": 2000
+  },
+  {
+    "artist": "Muse",
+    "title": "Uprising",
+    "year": 2009
+  },
+  {
+    "artist": "Arcade Fire",
+    "title": "Wake Up",
+    "year": 2004
+  },
+  {
+    "artist": "The Strokes",
+    "title": "Last Nite",
+    "year": 2001
+  },
+  {
+    "artist": "Franz Ferdinand",
+    "title": "Take Me Out",
+    "year": 2004
+  },
+  {
+    "artist": "Kings of Leon",
+    "title": "Use Somebody",
+    "year": 2008
+  },
+  {
+    "artist": "Foo Fighters",
+    "title": "Everlong",
+    "year": 1997
+  },
+  {
+    "artist": "Blink-182",
+    "title": "All the Small Things",
+    "year": 1999
+  },
+  {
+    "artist": "Sum 41",
+    "title": "In Too Deep",
+    "year": 2001
+  },
+  {
+    "artist": "My Chemical Romance",
+    "title": "Welcome to the Black Parade",
+    "year": 2006
+  },
+  {
+    "artist": "Paramore",
+    "title": "Misery Business",
+    "year": 2007
+  },
+  {
+    "artist": "Evanescence",
+    "title": "Bring Me to Life",
+    "year": 2003
+  },
+  {
+    "artist": "Daft Punk",
+    "title": "One More Time",
+    "year": 2000
+  },
+  {
+    "artist": "Calvin Harris",
+    "title": "Summer",
+    "year": 2014
+  },
+  {
+    "artist": "David Guetta",
+    "title": "Titanium",
+    "year": 2011
+  },
+  {
+    "artist": "Swedish House Mafia",
+    "title": "Don't You Worry Child",
+    "year": 2012
+  },
+  {
+    "artist": "Alok",
+    "title": "Hear Me Now",
+    "year": 2016
+  },
+  {
+    "artist": "Bad Bunny",
+    "title": "Dákiti",
+    "year": 2020
+  },
+  {
+    "artist": "J Balvin",
+    "title": "Mi Gente",
+    "year": 2017
+  },
+  {
+    "artist": "Shakira",
+    "title": "Hips Don't Lie",
+    "year": 2006
+  },
+  {
+    "artist": "Enrique Iglesias",
+    "title": "Bailando",
+    "year": 2014
+  },
+  {
+    "artist": "Manu Chao",
+    "title": "Me Gustas Tu",
+    "year": 2001
+  },
+  {
+    "artist": "Gipsy Kings",
+    "title": "Bamboleo",
+    "year": 1987
   }
 ]

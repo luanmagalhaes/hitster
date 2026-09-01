@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { AudioDeck } from "@/components/game/AudioDeck";
 import { HomeScreen } from "@/components/game/HomeScreen";
+import { ResultModal } from "@/components/game/ResultModal";
+import { TimeoutModal } from "@/components/game/TimeoutModal";
 import { JoinScreen } from "@/components/game/JoinScreen";
 import { LobbyScreen } from "@/components/game/LobbyScreen";
 import { TableScreen } from "@/components/game/TableScreen";
@@ -23,6 +25,7 @@ export function GameApp() {
   const [error, setError] = useState<string | null>(null);
   const [lastResult, setLastResult] = useState<GuessResult | null>(null);
   const [previews, setPreviews] = useState<Record<string, string | null>>({});
+  const [timeoutNotice, setTimeoutNotice] = useState<{ from: string; to: string } | null>(null);
 
   const { state, refresh } = useRoom(session?.code ?? null, session?.accessToken ?? null);
 
@@ -48,6 +51,40 @@ export function GameApp() {
 
   const currentTrackId = state?.room.current_track_id ?? null;
   const visibleResult = currentTrackId ? null : lastResult;
+  const turnStartedAt = state?.room.turn_started_at ?? null;
+  const turnSeconds = state?.room.turn_seconds ?? 60;
+  const playingPhase = state?.room.phase === "PLAYING";
+
+  useEffect(() => {
+    const code = session?.code;
+
+    if (!code || !playingPhase || currentTrackId || !turnStartedAt) {
+      return;
+    }
+
+    const check = async () => {
+      const elapsed = (Date.now() - new Date(turnStartedAt).getTime()) / 1000;
+
+      if (elapsed < turnSeconds) {
+        return;
+      }
+
+      try {
+        const result = await api.timeout(code);
+
+        if (result.skipped && result.from && result.to) {
+          setTimeoutNotice({ from: result.from, to: result.to });
+          await refresh();
+        }
+      } catch {
+        return;
+      }
+    };
+
+    const timer = window.setInterval(() => void check(), 3000);
+
+    return () => window.clearInterval(timer);
+  }, [session?.code, playingPhase, currentTrackId, turnStartedAt, turnSeconds, refresh]);
 
   useEffect(() => {
     const code = session?.code;
@@ -192,8 +229,28 @@ export function GameApp() {
     );
   }
 
+  const myName = me?.name ?? "Você";
+
   return (
-    <TableScreen
+    <>
+      {visibleResult ? (
+        <ResultModal
+          result={visibleResult}
+          playerName={myName}
+          onClose={() => setLastResult(null)}
+        />
+      ) : null}
+
+      {timeoutNotice ? (
+        <TimeoutModal
+          from={timeoutNotice.from}
+          to={timeoutNotice.to}
+          wasMe={timeoutNotice.from === myName}
+          onClose={() => setTimeoutNotice(null)}
+        />
+      ) : null}
+
+      <TableScreen
       room={state.room}
       players={state.players}
       cards={state.cards}
@@ -202,7 +259,8 @@ export function GameApp() {
       myId={state.meId}
       busy={busy}
       error={error}
-      lastResult={visibleResult}
+      turnStartedAt={turnStartedAt}
+      turnSeconds={turnSeconds}
       audio={
         <AudioDeck
           previewUrl={currentTrackId ? previews[currentTrackId] ?? null : null}
@@ -211,6 +269,10 @@ export function GameApp() {
         />
       }
       onPlay={() => run(() => api.play(session.code, session.accessToken))}
+      isHost={me?.is_host ?? false}
+      onRemovePlayer={(playerId) =>
+        run(() => api.removePlayer(session.code, session.accessToken, playerId))
+      }
       onSpendTokens={() => run(() => api.spendTokens(session.code, session.accessToken))}
       onGuess={(input) =>
         run(async () => {
@@ -219,7 +281,8 @@ export function GameApp() {
           setLastResult(result);
         })
       }
-      onLeave={leave}
-    />
+        onLeave={leave}
+      />
+    </>
   );
 }

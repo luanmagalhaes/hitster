@@ -60,6 +60,18 @@ export const api = {
       body: JSON.stringify({ hostName, deck, difficulty }),
     }),
 
+  timeout: (code: string) =>
+    request<{ skipped: boolean; from?: string; to?: string }>(`/api/rooms/${code}/timeout`, {
+      method: "POST",
+    }),
+
+  removePlayer: (code: string, token: string, playerId: string) =>
+    request<{ removed: string; turnPassed: boolean }>(
+      `/api/rooms/${code}/remove`,
+      { method: "POST", body: JSON.stringify({ playerId }) },
+      token,
+    ),
+
   spendTokens: (code: string, token: string) =>
     request<{ track: { artist: string; title: string; year: number } }>(
       `/api/rooms/${code}/tokens`,

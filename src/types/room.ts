@@ -20,6 +20,8 @@ export interface RoomRow {
   turn_player_id: string | null;
   current_track_id: string | null;
   current_started_at: string | null;
+  turn_started_at: string | null;
+  turn_seconds: number;
 }
 
 export interface PlayerRow {

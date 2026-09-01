@@ -1,11 +1,10 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { TimelineBoard } from "@/components/game/TimelineBoard";
 import { Button } from "@/components/ui/Button";
 import { Screen } from "@/components/ui/Screen";
 import { Wordmark } from "@/components/ui/Wordmark";
-import type { GuessResult } from "@/lib/api";
 import type { EventRow, PlayerRow, RoomRow, TimelineCardRow } from "@/types/room";
 
 interface TableScreenProps {
@@ -17,11 +16,14 @@ interface TableScreenProps {
   myId: string | null;
   busy: boolean;
   error: string | null;
-  lastResult: GuessResult | null;
+  turnStartedAt: string | null;
+  turnSeconds: number;
   audio: ReactNode;
   onPlay: () => void;
   onGuess: (input: { slotIndex: number; artistGuess?: string; titleGuess?: string }) => void;
   onSpendTokens: () => void;
+  onRemovePlayer: (playerId: string) => void;
+  isHost: boolean;
   onLeave: () => void;
 }
 
@@ -31,6 +33,8 @@ const eventLabels: Record<string, string> = {
   TRACK_DRAWN: "puxou uma música",
   TRACK_SKIPPED: "pulou a faixa",
   TOKENS_SPENT: "trocou fichas por carta",
+  PLAYER_REMOVED: "tirou alguém da mesa",
+  TURN_TIMEOUT: "demorou e perdeu a vez",
   GUESS_CORRECT: "ACERTOU",
   GUESS_WRONG: "ERROU",
   MATCH_WON: "venceu a partida",
@@ -51,13 +55,24 @@ export function TableScreen({
   myId,
   busy,
   error,
-  lastResult,
+  turnStartedAt,
+  turnSeconds,
   audio,
   onPlay,
   onGuess,
   onSpendTokens,
+  onRemovePlayer,
+  isHost,
   onLeave,
 }: TableScreenProps) {
+  const [confirmingRemoval, setConfirmingRemoval] = useState<string | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+
+    return () => window.clearInterval(timer);
+  }, []);
   const me = players.find((player) => player.id === myId);
   const turnPlayer = players.find((player) => player.id === room.turn_player_id);
   const myTurn = Boolean(me && room.turn_player_id === me.id);
@@ -65,6 +80,9 @@ export function TableScreen({
   const myCards = cards
     .filter((card) => card.player_id === myId)
     .sort((a, b) => a.year - b.year);
+  const secondsLeft = turnStartedAt
+    ? Math.max(0, turnSeconds - Math.floor((now - new Date(turnStartedAt).getTime()) / 1000))
+    : turnSeconds;
   const ranking = [...players].sort(
     (a, b) => b.timeline_count - a.timeline_count || b.tokens - a.tokens || a.seat - b.seat,
   );
@@ -166,7 +184,48 @@ export function TableScreen({
                       {player.tokens} {player.tokens === 1 ? "ficha" : "fichas"}
                     </span>
                   </span>
+
+                  {isHost && player.id !== myId ? (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmingRemoval(player.id)}
+                      disabled={busy}
+                      aria-label={`Tirar ${player.name} da mesa`}
+                      className="display shrink-0 cursor-pointer rounded-lg px-2 py-1 text-xs text-ink/35 transition-colors hover:bg-magenta hover:text-cream disabled:cursor-not-allowed"
+                    >
+                      tirar
+                    </button>
+                  ) : null}
                 </div>
+
+                {confirmingRemoval === player.id ? (
+                  <div className="mt-3 rounded-xl border-2 border-ink bg-magenta-soft p-3">
+                    <p className="text-xs font-semibold text-ink">
+                      Tirar {player.name} da partida? As cartas dela voltam para o monte e o jogo
+                      segue.
+                    </p>
+                    <div className="mt-2 flex gap-2">
+                      <Button
+                        variant="ghost"
+                        fullWidth
+                        onClick={() => setConfirmingRemoval(null)}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        variant="magenta"
+                        fullWidth
+                        disabled={busy}
+                        onClick={() => {
+                          onRemovePlayer(player.id);
+                          setConfirmingRemoval(null);
+                        }}
+                      >
+                        Tirar da mesa
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
               </li>
             );
           })}
@@ -187,6 +246,22 @@ export function TableScreen({
             : "Aguarde a rodada da pessoa. Você pode ir montando o ouvido."}
         </span>
 
+        {!playing && turnStartedAt ? (
+          <div className="mt-3">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-ink/15">
+              <div
+                className={`h-full rounded-full ${secondsLeft <= 15 ? "bg-magenta" : "bg-aqua"}`}
+                style={{ width: `${(secondsLeft / turnSeconds) * 100}%`, transition: "width 1s linear" }}
+              />
+            </div>
+            <p className="mt-1 text-xs font-semibold opacity-75">
+              {myTurn
+                ? `${secondsLeft}s para tocar, senão a vez passa`
+                : `${secondsLeft}s para ${turnPlayer?.name ?? "a pessoa"} tocar`}
+            </p>
+          </div>
+        ) : null}
+
         {myTurn && !playing ? (
           <div className="mt-3">
             <Button variant="ink" fullWidth disabled={busy} onClick={onPlay}>
@@ -195,76 +270,6 @@ export function TableScreen({
           </div>
         ) : null}
       </div>
-
-      {lastResult ? (
-        <div className="animate-sleeve-slide mb-5 overflow-hidden rounded-3xl border-2 border-ink">
-          <div
-            className={`p-4 ${lastResult.correct ? "bg-aqua" : "bg-magenta"} ${lastResult.correct ? "text-ink" : "text-cream"}`}
-          >
-            <span className="display block text-2xl">
-              {lastResult.correct ? "Acertou a posição!" : "Errou a posição"}
-            </span>
-            <span className="mt-1 block text-sm opacity-85">
-              {lastResult.track.artist} — {lastResult.track.title}
-            </span>
-            <span className="display mt-1 block text-4xl">{lastResult.track.year}</span>
-          </div>
-
-          <div className="bg-paper p-4 text-ink">
-            <div className="flex flex-col gap-2 text-sm">
-              <div className="flex items-start gap-2">
-                <span className="display shrink-0 text-base">
-                  {lastResult.correct ? "✓" : "✗"}
-                </span>
-                <span>
-                  Você pôs <strong>{lastResult.chosenLabel}</strong>
-                  {lastResult.correct ? (
-                    " e a carta é sua."
-                  ) : (
-                    <>
-                      , mas {lastResult.track.year} fica{" "}
-                      <strong>{lastResult.correctLabel}</strong>. A carta volta pro monte.
-                    </>
-                  )}
-                </span>
-              </div>
-
-              {lastResult.artistTried || lastResult.titleTried ? (
-                <>
-                  <div className="flex items-start gap-2">
-                    <span className="display shrink-0 text-base">
-                      {lastResult.artistHit ? "✓" : "✗"}
-                    </span>
-                    <span>
-                      Artista: {lastResult.artistHit ? "certo" : "errado"} — era{" "}
-                      <strong>{lastResult.track.artist}</strong>
-                    </span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <span className="display shrink-0 text-base">
-                      {lastResult.titleHit ? "✓" : "✗"}
-                    </span>
-                    <span>
-                      Música: {lastResult.titleHit ? "certo" : "errado"} — era{" "}
-                      <strong>{lastResult.track.title}</strong>
-                    </span>
-                  </div>
-                </>
-              ) : null}
-
-              {lastResult.bonusReason ? (
-                <p
-                  className={`mt-1 rounded-xl border-2 border-ink px-3 py-2 text-xs font-semibold ${
-                    lastResult.earnedTokens > 0 ? "bg-aqua" : "bg-sun-light"
-                  }`}
-                >
-                  {lastResult.bonusReason}
-                </p>
-              ) : null}
-            </div>
-          </div>
-        </div>
-      ) : null}
 
       <section className="mb-6">
         <h2 className="display mb-3 text-xl text-ink">

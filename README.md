@@ -54,13 +54,13 @@ Os jogadores palpitam nos próprios celulares e nunca olham aquela tela. É exat
 
 ## 🎼 O baralho
 
-**258 músicas curadas**, cobrindo de 1947 a 2024:
+**459 músicas curadas**, cobrindo de 1947 a 2024:
 
 | Baralho | Músicas | O que tem dentro |
 | ------- | :-----: | ---------------- |
-| 🇧🇷 **Nacional** | 123 | Da Ju Marques da Seresta a Caetano — mais Tim Maia, Legião, Racionais, axé, pagode, sertanejo, Calypso, Anitta, Marina Sena |
-| 🌍 **Internacional** | 135 | Elvis, Beatles, Queen, Michael Jackson, ABBA, Nirvana, Beyoncé, Billie Eilish |
-| 🎛️ **Misto** | 258 | Os dois embaralhados |
+| 🇧🇷 **Nacional** | 219 | Da Ju Marques da Seresta a Caetano — mais Tim Maia, Legião, Racionais, axé, pagode, sertanejo, Calypso, Anitta, Marina Sena |
+| 🌍 **Internacional** | 240 | Elvis, Beatles, Queen, Michael Jackson, ABBA, Nirvana, Beyoncé, Billie Eilish |
+| 🎛️ **Misto** | 459 | Os dois embaralhados |
 
 Distribuição por década, para o jogo não virar só anos 2010:
 
@@ -154,7 +154,7 @@ scripts/seed/           # catálogo curado, por baralho
 
 ## 🗺️ Estado
 
-- [x] Baralho de 258 músicas curadas, com distribuição por década
+- [x] Baralho de 459 músicas curadas, com distribuição por década
 - [x] Sistema visual, abertura animada, responsivo desktop e mobile
 - [x] Fonte de áudio validada (prévia do Deezer, sem login)
 - [x] Áudio tocando no app, com pausar e repetir
@@ -164,6 +164,9 @@ scripts/seed/           # catálogo curado, por baralho
 - [x] Três modos de jogo (clássico, rápido, maratona)
 - [x] Animação de vitória
 - [x] Voltar para a sala depois de sair
+- [x] Host tira jogador da mesa, com as cartas voltando ao monte
+- [x] Vez expira em 1 minuto e passa sozinha
+- [x] Palpite tolera erro de digitação
 - [ ] Roubar carta de quem errou
 - [ ] Placar entre partidas
 - [ ] Deploy

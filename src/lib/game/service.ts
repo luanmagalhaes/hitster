@@ -273,6 +273,7 @@ export async function startMatch(input: { code: string; token: string }) {
       phase: RoomPhase.Playing,
       started_at: new Date().toISOString(),
       turn_player_id: roster[0].id,
+      turn_started_at: new Date().toISOString(),
     })
     .eq("id", room.id);
 
@@ -502,6 +503,7 @@ export async function submitGuess(input: {
         current_track_id: null,
         current_started_at: null,
         turn_player_id: nextPlayer?.id ?? me.id,
+        turn_started_at: new Date().toISOString(),
       })
       .eq("id", room.id);
   }
@@ -686,4 +688,188 @@ export async function spendTokens(input: { code: string; token: string }) {
   }
 
   return { track: { artist: track.artist, title: track.title, year: track.year } };
+}
+
+export async function removePlayer(input: { code: string; token: string; playerId: string }) {
+  const client = serverClient();
+  const room = await loadRoom(input.code);
+  const me = await loadPlayer(room, input.token);
+
+  if (!me.is_host) {
+    throw new ServiceError("só o host pode remover jogadores", 403);
+  }
+
+  if (input.playerId === me.id) {
+    throw new ServiceError("o host não pode remover a si mesmo", 422);
+  }
+
+  const { data: target } = await client
+    .from("vt_players")
+    .select("id, name, seat")
+    .eq("id", input.playerId)
+    .eq("room_id", room.id)
+    .maybeSingle();
+
+  if (!target) {
+    throw new ServiceError("esse jogador não está nesta sala", 404);
+  }
+
+  const { data: roster } = await client
+    .from("vt_players")
+    .select("id, seat")
+    .eq("room_id", room.id)
+    .order("seat");
+
+  const others = (roster ?? []).filter((player) => player.id !== target.id);
+
+  if (others.length === 0) {
+    throw new ServiceError("não dá para esvaziar a sala", 409);
+  }
+
+  const { data: theirCards } = await client
+    .from("vt_timeline_cards")
+    .select("track_id")
+    .eq("player_id", target.id);
+
+  if (theirCards && theirCards.length > 0) {
+    const { data: lastPosition } = await client
+      .from("vt_draw_pile")
+      .select("position")
+      .eq("room_id", room.id)
+      .order("position", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    let position = ((lastPosition?.position as number | undefined) ?? 0) + 1;
+
+    await client.from("vt_timeline_cards").delete().eq("player_id", target.id);
+
+    await client.from("vt_draw_pile").insert(
+      theirCards.map((card) => ({
+        room_id: room.id,
+        track_id: card.track_id,
+        position: position++,
+      })),
+    );
+  }
+
+  const wasTheirTurn = room.turn_player_id === target.id;
+  const following = nextSeat(target.seat as number, others.map((player) => player.seat as number));
+  const nextPlayer = others.find((player) => player.seat === following) ?? others[0];
+
+  await client.from("vt_players").delete().eq("id", target.id);
+
+  if (wasTheirTurn) {
+    await client
+      .from("vt_rooms")
+      .update({
+        turn_player_id: nextPlayer.id,
+        current_track_id: null,
+        current_started_at: null,
+        turn_started_at: new Date().toISOString(),
+      })
+      .eq("id", room.id);
+  }
+
+  await record({
+    roomId: room.id,
+    type: "PLAYER_REMOVED",
+    actorId: me.id,
+    detail: `${target.name} saiu da mesa, as cartas dela voltaram para o monte`,
+  });
+
+  if (others.length === 1 && room.phase === RoomPhase.Playing) {
+    await client
+      .from("vt_rooms")
+      .update({
+        phase: RoomPhase.Finished,
+        winner_player_id: others[0].id,
+        finished_at: new Date().toISOString(),
+        current_track_id: null,
+      })
+      .eq("id", room.id)
+      .is("winner_player_id", null);
+
+    await record({
+      roomId: room.id,
+      type: "MATCH_WON",
+      actorId: others[0].id as string,
+      detail: "sobrou sozinho na mesa",
+    });
+  }
+
+  return { removed: target.name as string, turnPassed: wasTheirTurn };
+}
+
+export async function skipIdleTurn(input: { code: string }) {
+  const client = serverClient();
+  const room = await loadRoom(input.code);
+
+  if (room.phase !== RoomPhase.Playing || !room.turn_player_id) {
+    return { skipped: false as const };
+  }
+
+  if (room.current_track_id) {
+    return { skipped: false as const };
+  }
+
+  const startedAt = room.turn_started_at ? new Date(room.turn_started_at).getTime() : null;
+
+  if (!startedAt) {
+    await client
+      .from("vt_rooms")
+      .update({ turn_started_at: new Date().toISOString() })
+      .eq("id", room.id);
+
+    return { skipped: false as const };
+  }
+
+  const elapsed = (Date.now() - startedAt) / 1000;
+
+  if (elapsed < room.turn_seconds) {
+    return { skipped: false as const };
+  }
+
+  const { data: roster } = await client
+    .from("vt_players")
+    .select("id, name, seat")
+    .eq("room_id", room.id)
+    .order("seat");
+
+  const players = roster ?? [];
+  const current = players.find((player) => player.id === room.turn_player_id);
+
+  if (!current || players.length < 2) {
+    return { skipped: false as const };
+  }
+
+  const following = nextSeat(
+    current.seat as number,
+    players.map((player) => player.seat as number),
+  );
+  const nextPlayer = players.find((player) => player.seat === following) ?? players[0];
+
+  const { data: moved } = await client
+    .from("vt_rooms")
+    .update({ turn_player_id: nextPlayer.id, turn_started_at: new Date().toISOString() })
+    .eq("id", room.id)
+    .eq("turn_player_id", current.id)
+    .select("id");
+
+  if (!moved || moved.length === 0) {
+    return { skipped: false as const };
+  }
+
+  await record({
+    roomId: room.id,
+    type: "TURN_TIMEOUT",
+    actorId: current.id as string,
+    detail: `demorou mais de ${room.turn_seconds} segundos, a vez passou para ${nextPlayer.name}`,
+  });
+
+  return {
+    skipped: true as const,
+    from: current.name as string,
+    to: nextPlayer.name as string,
+  };
 }
