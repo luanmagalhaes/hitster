@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Vitrola">
+  <defs>
+    <radialGradient id="labelShine" cx="35%" cy="30%" r="75%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="plate" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffd400"/>
+      <stop offset="1" stop-color="#f5a300"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="url(#plate)"/>
+
+  <g>
+    <circle cx="232" cy="290" r="172" fill="#101014"/>
+    <circle cx="232" cy="290" r="172" fill="none" stroke="#101014" stroke-width="10"/>
+    <g fill="none" stroke="#fff9e8" stroke-opacity="0.16" stroke-width="7">
+      <circle cx="232" cy="290" r="150"/>
+      <circle cx="232" cy="290" r="128"/>
+      <circle cx="232" cy="290" r="106"/>
+      <circle cx="232" cy="290" r="84"/>
+    </g>
+    <circle cx="232" cy="290" r="62" fill="#e6007e"/>
+    <circle cx="232" cy="290" r="62" fill="url(#labelShine)"/>
+    <circle cx="232" cy="290" r="13" fill="#fff9e8"/>
+  </g>
+
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <path d="M436 96 L300 232" stroke="#fff9e8" stroke-width="44"/>
+    <path d="M436 96 L300 232" stroke="#101014" stroke-width="26"/>
+    <circle cx="436" cy="96" r="40" fill="#fff9e8"/>
+    <circle cx="436" cy="96" r="28" fill="#101014"/>
+    <circle cx="436" cy="96" r="11" fill="#ffd400"/>
+    <path d="M300 232 L282 250" stroke="#fff9e8" stroke-width="46"/>
+    <path d="M300 232 L284 248" stroke="#00c2d1" stroke-width="30"/>
+  </g>
+</svg>

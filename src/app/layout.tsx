@@ -21,7 +21,13 @@ export const metadata: Metadata = {
   title: brand.name,
   description: brand.tagline,
   applicationName: brand.name,
-  appleWebApp: { capable: true, title: brand.name, statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: brand.name, statusBarStyle: "black-translucent" },
+  openGraph: {
+    title: brand.name,
+    description: brand.tagline,
+    type: "website",
+    locale: "pt_BR",
+  },
 };
 
 export const viewport: Viewport = {
