@@ -93,8 +93,8 @@ export function TimelineBoard({
               Quer apostar mais? (opcional)
             </span>
             <p className="mt-1 text-xs text-ink/60">
-              A ficha só sai se você acertar <strong>artista e música</strong>. Acertar só um não
-              vale nada.
+              Cada acerto vale <strong>1 ficha</strong>. Cravar artista <strong>e</strong> música
+              vale <strong>2</strong>.
             </p>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               <input

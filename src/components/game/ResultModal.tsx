@@ -40,7 +40,7 @@ function Line({ hit, label, detail }: LineProps) {
 
 export function ResultModal({ result, playerName, onClose }: ResultModalProps) {
   const tried = result.artistTried || result.titleTried;
-  const score = (result.correct ? 1 : 0) + (result.earnedTokens > 0 ? 1 : 0);
+  const score = (result.correct ? 1 : 0) + result.earnedTokens;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/70 p-4 sm:items-center">
@@ -113,18 +113,33 @@ export function ResultModal({ result, playerName, onClose }: ResultModalProps) {
             />
           ) : null}
 
-          {result.bonusReason ? (
-            <li
-              className={`rounded-2xl border-2 border-ink p-3 text-center ${
-                result.earnedTokens > 0 ? "bg-aqua" : "bg-paper"
-              }`}
-            >
-              {result.earnedTokens > 0 ? (
-                <span className="display flex items-center justify-center gap-2 text-lg text-ink">
-                  <span className="h-4 w-4 rounded-full bg-magenta" />+{result.earnedTokens} ficha
+          {result.earnedTokens > 0 ? (
+            <li className="animate-winner-stamp overflow-hidden rounded-2xl border-2 border-ink bg-magenta text-center">
+              <div className="bg-magenta px-3 py-4 text-cream">
+                <span className="display block text-xs uppercase tracking-[0.2em] opacity-75">
+                  {result.earnedTokens === 2 ? "Dobrou a aposta" : "Ganhou ficha"}
                 </span>
-              ) : null}
-              <span className="mt-1 block text-xs font-semibold leading-snug text-ink/75">
+                <span className="mt-2 flex items-center justify-center gap-2">
+                  {Array.from({ length: result.earnedTokens }, (_, slot) => (
+                    <span
+                      key={slot}
+                      className="display flex h-11 w-11 items-center justify-center rounded-full border-2 border-cream bg-sun text-lg text-ink"
+                    >
+                      ★
+                    </span>
+                  ))}
+                </span>
+                <span className="display mt-2 block text-2xl">
+                  +{result.earnedTokens} ficha{result.earnedTokens > 1 ? "s" : ""}
+                </span>
+              </div>
+              <span className="block bg-paper px-3 py-2 text-xs font-semibold leading-snug text-ink/75">
+                {result.bonusReason}
+              </span>
+            </li>
+          ) : result.bonusReason ? (
+            <li className="rounded-2xl border-2 border-ink bg-paper p-3 text-center">
+              <span className="block text-xs font-semibold leading-snug text-ink/75">
                 {result.bonusReason}
               </span>
             </li>

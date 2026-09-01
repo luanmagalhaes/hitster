@@ -39,7 +39,7 @@ Cada carta que entra vira uma âncora nova, então os intervalos multiplicam e e
 
 Ficha é o tempero. Você gasta uma para:
 
-- **Cravar o artista ou o título** — acertou, ganha ficha de volta
+- **Cravar o artista ou o título** — cada acerto vale 1 ficha, os dois valem 2
 - **Roubar** — se alguém posicionou e você acha que errou, aposta e diz onde é o certo. Se você acerta e a pessoa erra, a carta muda de dono
 
 ---

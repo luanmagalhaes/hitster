@@ -410,19 +410,17 @@ export async function submitGuess(input: {
   const titleTried = Boolean(input.titleGuess?.trim());
   const artistHit = artistTried && answerMatches(input.artistGuess as string, track.artist);
   const titleHit = titleTried && answerMatches(input.titleGuess as string, track.title);
-  const bothTried = artistTried && titleTried;
-  const earnedTokens = artistHit && titleHit ? 1 : 0;
-  const bonusReason = !bothTried
-    ? artistTried || titleTried
-      ? "A ficha só sai acertando artista E título. Você preencheu só um campo."
-      : null
-    : earnedTokens > 0
-      ? "Artista e título certos: +1 ficha."
-      : artistHit
-        ? "Acertou o artista, mas errou o título. A ficha exige os dois."
-        : titleHit
-          ? "Acertou o título, mas errou o artista. A ficha exige os dois."
-          : "Errou artista e título, sem ficha.";
+  const earnedTokens = (artistHit ? 1 : 0) + (titleHit ? 1 : 0);
+  const anyTried = artistTried || titleTried;
+  const bonusReason = !anyTried
+    ? null
+    : earnedTokens === 2
+      ? "Artista e música, os dois certos: +2 fichas."
+      : earnedTokens === 1
+        ? artistHit
+          ? "Acertou o artista: +1 ficha. Cravando a música também seriam 2."
+          : "Acertou a música: +1 ficha. Cravando o artista também seriam 2."
+        : "Errou os dois, nenhuma ficha dessa vez.";
 
   if (earnedTokens > 0) {
     await client
@@ -458,7 +456,9 @@ export async function submitGuess(input: {
     correct
       ? `pôs ${labelForSlot(years, input.slotIndex)} e acertou`
       : `pôs ${labelForSlot(years, input.slotIndex)}, mas ${track.year} fica ${labelForSlot(years, rightSlot)}`,
-    earnedTokens > 0 ? "+1 ficha (artista e título)" : null,
+    earnedTokens > 0
+      ? `+${earnedTokens} ficha${earnedTokens > 1 ? "s" : ""}`
+      : null,
   ]
     .filter(Boolean)
     .join(" · ");
