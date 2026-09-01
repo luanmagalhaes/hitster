@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AudioDeck } from "@/components/game/AudioDeck";
 import { HomeScreen } from "@/components/game/HomeScreen";
 import { ResultModal } from "@/components/game/ResultModal";
+import { StarterRoll } from "@/components/game/StarterRoll";
 import { TimeoutModal } from "@/components/game/TimeoutModal";
 import { UpdateBanner } from "@/components/game/UpdateBanner";
 import { JoinScreen } from "@/components/game/JoinScreen";
@@ -26,6 +27,7 @@ export function GameApp() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [seenResultId, setSeenResultId] = useState<string | null>(null);
+  const [seenStarter, setSeenStarter] = useState<string | null>(null);
   const [previews, setPreviews] = useState<Record<string, string | null>>({});
   const [timeoutNotice, setTimeoutNotice] = useState<{ from: string; to: string } | null>(null);
 
@@ -43,6 +45,15 @@ export function GameApp() {
   }, [error]);
 
   const currentTrackId = state?.room.current_track_id ?? null;
+  const starterId = state?.room.starter_player_id ?? null;
+  const showStarter =
+    Boolean(starterId) &&
+    starterId !== seenStarter &&
+    state?.room.phase === "PLAYING" &&
+    !state?.room.current_track_id;
+  const starterName =
+    state?.players.find((player) => player.id === starterId)?.name ?? "alguém";
+
   const sharedResult = state?.room.last_result ?? null;
   const visibleResult =
     sharedResult && sharedResult.id !== seenResultId && !currentTrackId ? sharedResult : null;
@@ -227,6 +238,14 @@ export function GameApp() {
   return (
     <>
       {live.stale ? <UpdateBanner onReload={live.reloadNow} /> : null}
+
+      {showStarter && starterId ? (
+        <StarterRoll
+          starterName={starterName}
+          isMe={starterId === state.meId}
+          onDone={() => setSeenStarter(starterId)}
+        />
+      ) : null}
 
       {visibleResult ? (
         <ResultModal

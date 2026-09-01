@@ -268,17 +268,32 @@ export async function startMatch(input: { code: string; token: string }) {
     await client.rpc("vt_sync_counts", { p_player: player.id });
   }
 
+  const starter = roster[Math.floor(Math.random() * roster.length)];
+
   await client
     .from("vt_rooms")
     .update({
       phase: RoomPhase.Playing,
       started_at: new Date().toISOString(),
-      turn_player_id: roster[0].id,
+      turn_player_id: starter.id,
+      starter_player_id: starter.id,
       turn_started_at: new Date().toISOString(),
     })
     .eq("id", room.id);
 
+  const { data: starterRow } = await client
+    .from("vt_players")
+    .select("name")
+    .eq("id", starter.id)
+    .single();
+
   await record({ roomId: room.id, type: "MATCH_STARTED", actorId: me.id });
+  await record({
+    roomId: room.id,
+    type: "STARTER_DRAWN",
+    actorId: starter.id,
+    detail: `o dado caiu em ${starterRow?.name ?? "alguém"}`,
+  });
 
   return { started: true };
 }

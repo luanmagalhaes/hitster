@@ -37,6 +37,7 @@ const eventLabels: Record<string, string> = {
   TOKENS_SPENT: "trocou fichas por carta",
   PLAYER_REMOVED: "tirou alguém da mesa",
   TURN_TIMEOUT: "demorou e perdeu a vez",
+  STARTER_DRAWN: "foi sorteado para começar",
   GUESS_CORRECT: "ACERTOU",
   GUESS_WRONG: "ERROU",
   MATCH_WON: "venceu a partida",

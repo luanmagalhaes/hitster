@@ -34,6 +34,7 @@ export interface RoomRow {
   host_player_id: string | null;
   winner_player_id: string | null;
   turn_player_id: string | null;
+  starter_player_id: string | null;
   current_track_id: string | null;
   current_started_at: string | null;
   turn_started_at: string | null;
