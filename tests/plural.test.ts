@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cards, countLabel, plural, tokens } from "@/utils/plural";
+import { cards, cardsReturn, countLabel, plural, tokens, verb } from "@/utils/plural";
 
 describe("plural", () => {
   it("usa singular so no um", () => {
@@ -20,5 +20,19 @@ describe("plural", () => {
     expect(tokens(2)).toBe("2 fichas");
     expect(cards(1)).toBe("1 carta");
     expect(cards(4)).toBe("4 cartas");
+  });
+});
+
+describe("concordancia verbal", () => {
+  it("conjuga o verbo com a contagem", () => {
+    expect(verb(1, "volta", "voltam")).toBe("volta");
+    expect(verb(0, "volta", "voltam")).toBe("voltam");
+    expect(verb(3, "volta", "voltam")).toBe("voltam");
+  });
+
+  it("monta a frase de devolucao sem erro de concordancia", () => {
+    expect(cardsReturn(1)).toBe("1 carta volta para o monte");
+    expect(cardsReturn(2)).toBe("2 cartas voltam para o monte");
+    expect(cardsReturn(0)).toBe("0 cartas voltam para o monte");
   });
 });

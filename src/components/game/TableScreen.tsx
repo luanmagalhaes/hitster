@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { TimelineBoard } from "@/components/game/TimelineBoard";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
-import { cards as cardCount, tokens } from "@/utils/plural";
+import { cardsReturn, tokens } from "@/utils/plural";
 import { Screen } from "@/components/ui/Screen";
 import { Wordmark } from "@/components/ui/Wordmark";
 import type { EventRow, PlayerRow, RoomRow, TimelineCardRow } from "@/types/room";
@@ -109,7 +109,7 @@ export function TableScreen({
               </p>
               <ul className="mt-3 flex flex-col gap-1.5 text-xs">
                 <li className="rounded-xl bg-sun-light px-3 py-2">
-                  {cardCount(pendingRemoval.timeline_count)} voltam para o monte
+                  {cardsReturn(pendingRemoval.timeline_count)}
                 </li>
                 {pendingRemoval.id === room.turn_player_id ? (
                   <li className="rounded-xl bg-sun-light px-3 py-2">
@@ -118,7 +118,7 @@ export function TableScreen({
                 ) : null}
                 {players.length === 2 ? (
                   <li className="rounded-xl bg-magenta-soft px-3 py-2 font-semibold">
-                    Vocês ficam só você na mesa, então a partida encerra
+                    Você fica sozinho na mesa, então a partida encerra
                   </li>
                 ) : null}
               </ul>
@@ -296,8 +296,11 @@ export function TableScreen({
 
         <TimelineBoard
           key={room.current_track_id ?? "idle"}
-          years={myCards.map((card) => card.year)}
-          trackIds={myCards.map((card) => card.track_id)}
+          cards={myCards.map((card) => ({
+            year: card.year,
+            trackId: card.track_id,
+            isSeed: card.is_seed,
+          }))}
           canGuess={myTurn && playing}
           busy={busy}
           onGuess={onGuess}

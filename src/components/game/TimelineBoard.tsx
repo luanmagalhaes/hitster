@@ -5,9 +5,14 @@ import { Button } from "@/components/ui/Button";
 import { trackById } from "@/data/tracks";
 import { slotLabel, slotsFor } from "@/lib/game/timeline";
 
+export interface TimelineCard {
+  year: number;
+  trackId: string;
+  isSeed: boolean;
+}
+
 interface TimelineBoardProps {
-  years: readonly number[];
-  trackIds: readonly string[];
+  cards: readonly TimelineCard[];
   canGuess: boolean;
   busy: boolean;
   onGuess: (input: { slotIndex: number; artistGuess?: string; titleGuess?: string }) => void;
@@ -18,8 +23,7 @@ function capitalize(text: string): string {
 }
 
 export function TimelineBoard({
-  years,
-  trackIds,
+  cards: given,
   canGuess,
   busy,
   onGuess,
@@ -27,9 +31,8 @@ export function TimelineBoard({
   const [selected, setSelected] = useState<number | null>(null);
   const [artistGuess, setArtistGuess] = useState("");
   const [titleGuess, setTitleGuess] = useState("");
-  const sorted = [...years].sort((a, b) => a - b);
-  const slots = slotsFor(sorted);
-  const cards = sorted.map((year, index) => ({ year, trackId: trackIds[index] }));
+  const cards = [...given].sort((a, b) => a.year - b.year);
+  const slots = slotsFor(cards.map((card) => card.year));
 
   return (
     <div className="flex flex-col gap-5">
@@ -41,20 +44,33 @@ export function TimelineBoard({
           {cards.length === 0 ? (
             <p className="text-sm text-ink/50">Nenhuma carta ainda.</p>
           ) : (
-            cards.map((card) => (
-              <div
-                key={card.trackId}
-                className="edge-card flex w-[7.5rem] shrink-0 flex-col rounded-2xl border-2 border-ink bg-aqua p-3 text-ink"
-              >
-                <span className="display text-2xl leading-none">{card.year}</span>
-                <span className="mt-1.5 truncate text-[0.65rem] font-semibold leading-tight">
-                  {trackById(card.trackId)?.artist ?? ""}
-                </span>
-                <span className="truncate text-[0.65rem] leading-tight opacity-60">
-                  {trackById(card.trackId)?.title ?? ""}
-                </span>
-              </div>
-            ))
+            cards.map((card) =>
+              card.isSeed ? (
+                <div
+                  key={card.trackId}
+                  className="edge-card flex w-[7.5rem] shrink-0 flex-col items-center justify-center rounded-2xl border-2 border-ink bg-grape p-3 text-cream"
+                  title="Carta de saída"
+                >
+                  <span className="display text-3xl leading-none">{card.year}</span>
+                  <span className="mt-1.5 text-[0.55rem] font-semibold uppercase tracking-[0.14em] opacity-75">
+                    saída
+                  </span>
+                </div>
+              ) : (
+                <div
+                  key={card.trackId}
+                  className="edge-card flex w-[7.5rem] shrink-0 flex-col rounded-2xl border-2 border-ink bg-aqua p-3 text-ink"
+                >
+                  <span className="display text-2xl leading-none">{card.year}</span>
+                  <span className="mt-1.5 truncate text-[0.65rem] font-semibold leading-tight">
+                    {trackById(card.trackId)?.artist ?? ""}
+                  </span>
+                  <span className="truncate text-[0.65rem] leading-tight opacity-60">
+                    {trackById(card.trackId)?.title ?? ""}
+                  </span>
+                </div>
+              ),
+            )
           )}
         </div>
       </div>

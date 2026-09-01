@@ -59,6 +59,7 @@ export interface TimelineCardRow {
   player_id: string;
   track_id: string;
   year: number;
+  is_seed: boolean;
 }
 
 export interface EventRow {

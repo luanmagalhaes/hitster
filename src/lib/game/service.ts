@@ -233,7 +233,13 @@ export async function startMatch(input: { code: string; token: string }) {
   const pool = tracksForDeck(room.deck);
   const seedCount = room.seed_cards;
   const used = new Set<string>();
-  const rows: Array<{ room_id: string; player_id: string; track_id: string; year: number }> = [];
+  const rows: Array<{
+    room_id: string;
+    player_id: string;
+    track_id: string;
+    year: number;
+    is_seed: boolean;
+  }> = [];
 
   for (const player of roster) {
     const available = pool.filter((track) => !used.has(track.id));
@@ -246,6 +252,7 @@ export async function startMatch(input: { code: string; token: string }) {
         player_id: player.id,
         track_id: track.id,
         year: track.year,
+        is_seed: true,
       });
     }
   }
@@ -558,7 +565,7 @@ export async function roomState(input: { code: string; token?: string }) {
       client.from("vt_players").select("*").eq("room_id", room.id).order("seat"),
       client
         .from("vt_timeline_cards")
-        .select("id, player_id, track_id, year")
+        .select("id, player_id, track_id, year, is_seed")
         .eq("room_id", room.id)
         .order("year"),
       client

@@ -66,7 +66,9 @@ export function LobbyScreen({
             disabled={busy || !enough}
             onClick={() => setConfirmingStart(true)}
           >
-            {enough ? "Começar a partida" : "Precisa de mais um jogador"}
+            {enough
+              ? "Começar a partida"
+              : `Falta ${2 - players.length} ${2 - players.length === 1 ? "jogador" : "jogadores"}`}
           </Button>
         ) : (
           <p className="text-center text-sm font-semibold text-ink/60">
