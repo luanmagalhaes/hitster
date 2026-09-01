@@ -471,6 +471,24 @@ export async function submitGuess(input: {
     detail,
   });
 
+  const resultPayload = {
+    id: `${room.id}-${Date.now()}`,
+    playerId: me.id,
+    playerName: me.name,
+    correct,
+    track: { artist: track.artist, title: track.title, year: track.year },
+    chosenLabel: labelForSlot(years, input.slotIndex),
+    correctLabel: labelForSlot(years, rightSlot),
+    artistTried,
+    titleTried,
+    artistHit,
+    titleHit,
+    earnedTokens,
+    bonusReason,
+  };
+
+  await client.from("vt_rooms").update({ last_result: resultPayload }).eq("id", room.id);
+
   const { data: refreshed } = await client
     .from("vt_players")
     .select("id, seat, timeline_count")
@@ -509,18 +527,9 @@ export async function submitGuess(input: {
   }
 
   return {
-    correct,
-    track: { artist: track.artist, title: track.title, year: track.year },
+    ...resultPayload,
     correctSlot: correct ? input.slotIndex : rightSlot,
-    chosenLabel: labelForSlot(years, input.slotIndex),
-    correctLabel: labelForSlot(years, rightSlot),
     winnerId: winner?.id ?? null,
-    artistTried,
-    titleTried,
-    artistHit,
-    titleHit,
-    earnedTokens,
-    bonusReason,
   };
 }
 

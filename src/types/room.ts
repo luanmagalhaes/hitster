@@ -6,6 +6,22 @@ export const RoomPhase = {
 
 export type RoomPhase = (typeof RoomPhase)[keyof typeof RoomPhase];
 
+export interface SharedResult {
+  id: string;
+  playerId: string;
+  playerName: string;
+  correct: boolean;
+  track: { artist: string; title: string; year: number };
+  chosenLabel: string;
+  correctLabel: string;
+  artistTried: boolean;
+  titleTried: boolean;
+  artistHit: boolean;
+  titleHit: boolean;
+  earnedTokens: number;
+  bonusReason: string | null;
+}
+
 export interface RoomRow {
   id: string;
   code: string;
@@ -22,6 +38,7 @@ export interface RoomRow {
   current_started_at: string | null;
   turn_started_at: string | null;
   turn_seconds: number;
+  last_result: SharedResult | null;
 }
 
 export interface PlayerRow {

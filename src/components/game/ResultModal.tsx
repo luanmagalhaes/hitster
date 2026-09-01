@@ -2,12 +2,12 @@
 
 import { Button } from "@/components/ui/Button";
 import { Vinyl } from "@/components/ui/Vinyl";
-import type { GuessResult } from "@/lib/api";
+import type { SharedResult } from "@/types/room";
 import { tokens } from "@/utils/plural";
 
 interface ResultModalProps {
-  result: GuessResult;
-  playerName: string;
+  result: SharedResult;
+  isMe: boolean;
   onClose: () => void;
 }
 
@@ -39,9 +39,12 @@ function Line({ hit, label, detail }: LineProps) {
   );
 }
 
-export function ResultModal({ result, playerName, onClose }: ResultModalProps) {
+export function ResultModal({ result, isMe, onClose }: ResultModalProps) {
   const tried = result.artistTried || result.titleTried;
   const score = (result.correct ? 1 : 0) + result.earnedTokens;
+  const who = isMe ? "Você" : result.playerName;
+  const put = isMe ? "Você pôs" : `${result.playerName} pôs`;
+  const guessed = isMe ? "Você chutou" : "Chutou";
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/70 p-4 sm:items-center">
@@ -54,7 +57,7 @@ export function ResultModal({ result, playerName, onClose }: ResultModalProps) {
           <Vinyl spinning={result.correct} className="w-16 shrink-0" />
           <div className="min-w-0">
             <span className="display block text-2xl leading-tight">
-              {result.correct ? `${playerName} acertou!` : `${playerName} errou`}
+              {result.correct ? `${who} acertou!` : `${who} errou`}
             </span>
             <span className="mt-1 block text-sm opacity-85">
               {result.correct
@@ -85,8 +88,8 @@ export function ResultModal({ result, playerName, onClose }: ResultModalProps) {
             label={result.correct ? "Posição certa" : "Posição errada"}
             detail={
               result.correct
-                ? `Você pôs ${result.chosenLabel} e é isso mesmo.`
-                : `Você pôs ${result.chosenLabel}, mas ${result.track.year} fica ${result.correctLabel}.`
+                ? `${put} ${result.chosenLabel} e é isso mesmo.`
+                : `${put} ${result.chosenLabel}, mas ${result.track.year} fica ${result.correctLabel}.`
             }
           />
 
@@ -97,7 +100,7 @@ export function ResultModal({ result, playerName, onClose }: ResultModalProps) {
               detail={
                 result.artistHit
                   ? `Era ${result.track.artist} mesmo.`
-                  : `Você chutou outro nome. Era ${result.track.artist}.`
+                  : `${guessed} outro nome. Era ${result.track.artist}.`
               }
             />
           ) : null}
@@ -109,7 +112,7 @@ export function ResultModal({ result, playerName, onClose }: ResultModalProps) {
               detail={
                 result.titleHit
                   ? `Era ${result.track.title} mesmo.`
-                  : `Você chutou outro nome. Era ${result.track.title}.`
+                  : `${guessed} outro nome. Era ${result.track.title}.`
               }
             />
           ) : null}
@@ -146,7 +149,9 @@ export function ResultModal({ result, playerName, onClose }: ResultModalProps) {
 
           {!tried ? (
             <li className="rounded-2xl border-2 border-dashed border-ink/35 p-3 text-center text-xs font-semibold text-ink/55">
-              Da próxima, tente cravar artista e música também: vale ficha.
+              {isMe
+                ? "Da próxima, tente cravar artista e música também: vale ficha."
+                : "Não tentou cravar artista nem música dessa vez."}
             </li>
           ) : null}
         </ul>

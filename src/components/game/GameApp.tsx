@@ -11,7 +11,7 @@ import { TableScreen } from "@/components/game/TableScreen";
 import { VictoryScreen } from "@/components/game/VictoryScreen";
 import { useRoom } from "@/hooks/useRoom";
 import { useSession } from "@/hooks/useSession";
-import { api, type GuessResult } from "@/lib/api";
+import { api } from "@/lib/api";
 import type { DeckKind } from "@/types/track";
 
 type View = "HOME" | "CREATE" | "JOIN";
@@ -23,7 +23,7 @@ export function GameApp() {
   const [difficulty, setDifficulty] = useState("CLASSIC");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [lastResult, setLastResult] = useState<GuessResult | null>(null);
+  const [seenResultId, setSeenResultId] = useState<string | null>(null);
   const [previews, setPreviews] = useState<Record<string, string | null>>({});
   const [timeoutNotice, setTimeoutNotice] = useState<{ from: string; to: string } | null>(null);
 
@@ -39,18 +39,10 @@ export function GameApp() {
     return () => window.clearTimeout(timer);
   }, [error]);
 
-  useEffect(() => {
-    if (!lastResult) {
-      return;
-    }
-
-    const timer = window.setTimeout(() => setLastResult(null), 5200);
-
-    return () => window.clearTimeout(timer);
-  }, [lastResult]);
-
   const currentTrackId = state?.room.current_track_id ?? null;
-  const visibleResult = currentTrackId ? null : lastResult;
+  const sharedResult = state?.room.last_result ?? null;
+  const visibleResult =
+    sharedResult && sharedResult.id !== seenResultId && !currentTrackId ? sharedResult : null;
   const turnStartedAt = state?.room.turn_started_at ?? null;
   const turnSeconds = state?.room.turn_seconds ?? 60;
   const playingPhase = state?.room.phase === "PLAYING";
@@ -229,15 +221,13 @@ export function GameApp() {
     );
   }
 
-  const myName = me?.name ?? "Você";
-
   return (
     <>
       {visibleResult ? (
         <ResultModal
           result={visibleResult}
-          playerName={myName}
-          onClose={() => setLastResult(null)}
+          isMe={visibleResult.playerId === state.meId}
+          onClose={() => setSeenResultId(visibleResult.id)}
         />
       ) : null}
 
@@ -245,7 +235,7 @@ export function GameApp() {
         <TimeoutModal
           from={timeoutNotice.from}
           to={timeoutNotice.to}
-          wasMe={timeoutNotice.from === myName}
+          wasMe={timeoutNotice.from === me?.name}
           onClose={() => setTimeoutNotice(null)}
         />
       ) : null}
@@ -276,9 +266,7 @@ export function GameApp() {
       onSpendTokens={() => run(() => api.spendTokens(session.code, session.accessToken))}
       onGuess={(input) =>
         run(async () => {
-          const result = await api.guess(session.code, session.accessToken, input);
-
-          setLastResult(result);
+          await api.guess(session.code, session.accessToken, input);
         })
       }
         onLeave={leave}
