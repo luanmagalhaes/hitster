@@ -105,6 +105,11 @@ export function JoinScreen({
             placeholder="Como aparece na mesa"
             maxLength={24}
             autoComplete="off"
+            autoCapitalize="words"
+            autoCorrect="off"
+            spellCheck={false}
+            inputMode="text"
+            lang="pt-BR"
             className="w-full rounded-2xl border-2 border-ink bg-paper px-4 py-4 text-lg text-ink outline-none placeholder:text-ink/30 focus:ring-4 focus:ring-ink/20"
           />
         </label>

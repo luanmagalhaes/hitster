@@ -73,3 +73,20 @@ describe("comparacao de resposta do jogador", () => {
     expect(normalize("Believe - Remastered")).toBe("believe");
   });
 });
+
+describe("texto do palpite no modal", () => {
+  const cases: Array<[string | null | undefined, string]> = [
+    ["Arctic Monkeys", "“Arctic Monkeys”"],
+    ["  Queen  ", "“Queen”"],
+    [null, "outro nome"],
+    [undefined, "outro nome"],
+    ["", "outro nome"],
+    ["   ", "outro nome"],
+  ];
+
+  it.each(cases)("formata %s como %s", (value, expected) => {
+    const clean = value?.trim();
+
+    expect(clean ? `“${clean}”` : "outro nome").toBe(expected);
+  });
+});

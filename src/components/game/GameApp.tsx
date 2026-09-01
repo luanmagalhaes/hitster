@@ -3,14 +3,15 @@
 import { useCallback, useEffect, useState } from "react";
 import { AudioDeck } from "@/components/game/AudioDeck";
 import { HomeScreen } from "@/components/game/HomeScreen";
+import { NoticeModal } from "@/components/game/NoticeModal";
 import { ResultModal } from "@/components/game/ResultModal";
 import { StarterRoll } from "@/components/game/StarterRoll";
-import { TimeoutModal } from "@/components/game/TimeoutModal";
 import { UpdateBanner } from "@/components/game/UpdateBanner";
 import { JoinScreen } from "@/components/game/JoinScreen";
 import { LobbyScreen } from "@/components/game/LobbyScreen";
 import { TableScreen } from "@/components/game/TableScreen";
 import { VictoryScreen } from "@/components/game/VictoryScreen";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { useLiveVersion } from "@/hooks/useLiveVersion";
 import { useRoom } from "@/hooks/useRoom";
 import { useSession } from "@/hooks/useSession";
@@ -29,7 +30,8 @@ export function GameApp() {
   const [seenResultId, setSeenResultId] = useState<string | null>(null);
   const [seenStarter, setSeenStarter] = useState<string | null>(null);
   const [previews, setPreviews] = useState<Record<string, string | null>>({});
-  const [timeoutNotice, setTimeoutNotice] = useState<{ from: string; to: string } | null>(null);
+  const [seenNoticeId, setSeenNoticeId] = useState<string | null>(null);
+  const [confirmingLeave, setConfirmingLeave] = useState(false);
 
   const { state, refresh } = useRoom(session?.code ?? null, session?.accessToken ?? null);
   const live = useLiveVersion(state?.version);
@@ -54,6 +56,8 @@ export function GameApp() {
   const starterName =
     state?.players.find((player) => player.id === starterId)?.name ?? "alguém";
 
+  const notice = state?.room.last_notice ?? null;
+  const visibleNotice = notice && notice.id !== seenNoticeId ? notice : null;
   const sharedResult = state?.room.last_result ?? null;
   const visibleResult =
     sharedResult && sharedResult.id !== seenResultId && !currentTrackId ? sharedResult : null;
@@ -76,12 +80,8 @@ export function GameApp() {
       }
 
       try {
-        const result = await api.timeout(code);
-
-        if (result.skipped && result.from && result.to) {
-          setTimeoutNotice({ from: result.from, to: result.to });
-          await refresh();
-        }
+        await api.timeout(code);
+        await refresh();
       } catch {
         return;
       }
@@ -136,6 +136,16 @@ export function GameApp() {
     clear();
     setView("HOME");
   };
+
+  const leaveForGood = () =>
+    run(async () => {
+      if (session) {
+        await api.leave(session.code, session.accessToken).catch(() => undefined);
+      }
+
+      clear();
+      setView("HOME");
+    });
 
   if (!session) {
     if (view === "CREATE" || view === "JOIN") {
@@ -255,13 +265,8 @@ export function GameApp() {
         />
       ) : null}
 
-      {timeoutNotice ? (
-        <TimeoutModal
-          from={timeoutNotice.from}
-          to={timeoutNotice.to}
-          wasMe={timeoutNotice.from === me?.name}
-          onClose={() => setTimeoutNotice(null)}
-        />
+      {visibleNotice ? (
+        <NoticeModal notice={visibleNotice} onClose={() => setSeenNoticeId(visibleNotice.id)} />
       ) : null}
 
       <TableScreen
@@ -293,8 +298,41 @@ export function GameApp() {
           await api.guess(session.code, session.accessToken, input);
         })
       }
-        onLeave={leave}
+        onLeave={() => setConfirmingLeave(true)}
       />
+
+      {confirmingLeave ? (
+        <ConfirmModal
+          title="Sair da partida?"
+          tone="danger"
+          busy={busy}
+          confirmLabel="Sair mesmo"
+          cancelLabel="Continuar jogando"
+          body={
+            <>
+              <p>
+                Você sai da mesa de vez e <strong className="text-ink">não consegue voltar</strong>{" "}
+                para esta sala.
+              </p>
+              <ul className="mt-3 flex flex-col gap-1.5 text-xs">
+                <li className="rounded-xl bg-sun-light px-3 py-2">
+                  Suas cartas voltam para o monte
+                </li>
+                {me?.is_host ? (
+                  <li className="rounded-xl bg-sun-light px-3 py-2">
+                    Outra pessoa vira o host da sala
+                  </li>
+                ) : null}
+              </ul>
+            </>
+          }
+          onCancel={() => setConfirmingLeave(false)}
+          onConfirm={() => {
+            setConfirmingLeave(false);
+            void leaveForGood();
+          }}
+        />
+      ) : null}
     </>
   );
 }

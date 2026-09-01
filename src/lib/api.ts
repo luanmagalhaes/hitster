@@ -66,6 +66,13 @@ export const api = {
       method: "POST",
     }),
 
+  leave: (code: string, token: string) =>
+    request<{ left: boolean; lastOne: boolean }>(
+      `/api/rooms/${code}/leave`,
+      { method: "POST" },
+      token,
+    ),
+
   removePlayer: (code: string, token: string, playerId: string) =>
     request<{ removed: string; turnPassed: boolean }>(
       `/api/rooms/${code}/remove`,

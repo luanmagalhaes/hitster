@@ -39,12 +39,33 @@ function Line({ hit, label, detail }: LineProps) {
   );
 }
 
+function quoted(value: string | null | undefined): string {
+  const clean = value?.trim();
+
+  return clean ? `“${clean}”` : "outro nome";
+}
+
 export function ResultModal({ result, isMe, onClose }: ResultModalProps) {
   const tried = result.artistTried || result.titleTried;
-  const score = (result.correct ? 1 : 0) + result.earnedTokens;
+  const missedBets = (result.artistTried && !result.artistHit) || (result.titleTried && !result.titleHit);
+  const subtitle = result.correct
+    ? result.earnedTokens === 2
+      ? "Posição, artista e música: gabaritou"
+      : result.earnedTokens === 1
+        ? missedBets
+          ? "Acertou a posição e metade da aposta"
+          : isMe
+            ? "A carta é sua e ainda levou ficha"
+            : "Levou a carta e ainda ganhou ficha"
+        : isMe
+          ? "A carta é sua"
+          : "A carta é dela"
+    : result.earnedTokens > 0
+      ? "Errou a posição, mas salvou a aposta"
+      : "A carta volta pro monte";
   const who = isMe ? "Você" : result.playerName;
   const put = isMe ? "Você pôs" : `${result.playerName} pôs`;
-  const guessed = isMe ? "Você chutou" : "Chutou";
+  const guessed = isMe ? "Você chutou" : `${result.playerName} chutou`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/70 p-4 sm:items-center">
@@ -59,13 +80,7 @@ export function ResultModal({ result, isMe, onClose }: ResultModalProps) {
             <span className="display block text-2xl leading-tight">
               {result.correct ? `${who} acertou!` : `${who} errou`}
             </span>
-            <span className="mt-1 block text-sm opacity-85">
-              {result.correct
-                ? score > 1
-                  ? "Posição e aposta, tudo certo"
-                  : "A carta é sua"
-                : "A carta volta pro monte"}
-            </span>
+            <span className="mt-1 block text-sm opacity-85">{subtitle}</span>
           </div>
         </div>
 
@@ -99,8 +114,8 @@ export function ResultModal({ result, isMe, onClose }: ResultModalProps) {
               label={result.artistHit ? "Artista certo" : "Artista errado"}
               detail={
                 result.artistHit
-                  ? `Era ${result.track.artist} mesmo.`
-                  : `${guessed} outro nome. Era ${result.track.artist}.`
+                  ? `${guessed} ${quoted(result.artistGuess)} e era ${result.track.artist} mesmo.`
+                  : `${guessed} ${quoted(result.artistGuess)}, mas era ${result.track.artist}.`
               }
             />
           ) : null}
@@ -111,8 +126,8 @@ export function ResultModal({ result, isMe, onClose }: ResultModalProps) {
               label={result.titleHit ? "Música certa" : "Música errada"}
               detail={
                 result.titleHit
-                  ? `Era ${result.track.title} mesmo.`
-                  : `${guessed} outro nome. Era ${result.track.title}.`
+                  ? `${guessed} ${quoted(result.titleGuess)} e era ${result.track.title} mesmo.`
+                  : `${guessed} ${quoted(result.titleGuess)}, mas era ${result.track.title}.`
               }
             />
           ) : null}

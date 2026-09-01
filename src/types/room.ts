@@ -18,8 +18,17 @@ export interface SharedResult {
   titleTried: boolean;
   artistHit: boolean;
   titleHit: boolean;
+  artistGuess: string | null;
+  titleGuess: string | null;
   earnedTokens: number;
   bonusReason: string | null;
+}
+
+export interface RoomNotice {
+  id: string;
+  kind: "REMOVED" | "LEFT" | "TIMEOUT" | "HOST_CHANGED";
+  title: string;
+  text: string;
 }
 
 export interface RoomRow {
@@ -40,6 +49,7 @@ export interface RoomRow {
   turn_started_at: string | null;
   turn_seconds: number;
   last_result: SharedResult | null;
+  last_notice: RoomNotice | null;
 }
 
 export interface PlayerRow {

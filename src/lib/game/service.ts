@@ -87,6 +87,131 @@ async function record(input: {
   });
 }
 
+async function publishNotice(input: {
+  roomId: string;
+  kind: "REMOVED" | "LEFT" | "TIMEOUT" | "HOST_CHANGED";
+  title: string;
+  text: string;
+}) {
+  await serverClient()
+    .from("vt_rooms")
+    .update({
+      last_notice: {
+        id: `${input.roomId}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        kind: input.kind,
+        title: input.title,
+        text: input.text,
+      },
+    })
+    .eq("id", input.roomId);
+}
+
+async function detachPlayer(input: {
+  room: RoomRow;
+  target: { id: string; name: string; seat: number };
+}) {
+  const client = serverClient();
+  const { room, target } = input;
+
+  const { data: roster } = await client
+    .from("vt_players")
+    .select("id, seat, is_host")
+    .eq("room_id", room.id)
+    .order("seat");
+
+  const others = (roster ?? []).filter((player) => player.id !== target.id);
+
+  if (others.length === 0) {
+    throw new ServiceError("não dá para esvaziar a sala", 409);
+  }
+
+  const { data: theirCards } = await client
+    .from("vt_timeline_cards")
+    .select("track_id")
+    .eq("player_id", target.id);
+
+  const returned = theirCards?.length ?? 0;
+
+  if (returned > 0) {
+    const { data: lastPosition } = await client
+      .from("vt_draw_pile")
+      .select("position")
+      .eq("room_id", room.id)
+      .order("position", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    let position = ((lastPosition?.position as number | undefined) ?? 0) + 1;
+
+    await client.from("vt_timeline_cards").delete().eq("player_id", target.id);
+    await client.from("vt_draw_pile").insert(
+      (theirCards ?? []).map((card) => ({
+        room_id: room.id,
+        track_id: card.track_id,
+        position: position++,
+      })),
+    );
+  }
+
+  const wasTheirTurn = room.turn_player_id === target.id;
+  const wasHost = (roster ?? []).find((player) => player.id === target.id)?.is_host ?? false;
+  const following = nextSeat(target.seat, others.map((player) => player.seat as number));
+  const nextPlayer = others.find((player) => player.seat === following) ?? others[0];
+
+  await client.from("vt_players").delete().eq("id", target.id);
+
+  if (wasTheirTurn) {
+    await client
+      .from("vt_rooms")
+      .update({
+        turn_player_id: nextPlayer.id,
+        current_track_id: null,
+        current_started_at: null,
+        turn_started_at: new Date().toISOString(),
+      })
+      .eq("id", room.id);
+  }
+
+  let newHostName: string | null = null;
+
+  if (wasHost) {
+    await client.from("vt_players").update({ is_host: true }).eq("id", others[0].id);
+    await client.from("vt_rooms").update({ host_player_id: others[0].id }).eq("id", room.id);
+
+    const { data: newHost } = await client
+      .from("vt_players")
+      .select("name")
+      .eq("id", others[0].id)
+      .maybeSingle();
+
+    newHostName = (newHost?.name as string | undefined) ?? null;
+  }
+
+  const finished = others.length === 1 && room.phase === RoomPhase.Playing;
+
+  if (finished) {
+    await client
+      .from("vt_rooms")
+      .update({
+        phase: RoomPhase.Finished,
+        winner_player_id: others[0].id,
+        finished_at: new Date().toISOString(),
+        current_track_id: null,
+      })
+      .eq("id", room.id)
+      .is("winner_player_id", null);
+
+    await record({
+      roomId: room.id,
+      type: "MATCH_WON",
+      actorId: others[0].id as string,
+      detail: "sobrou sozinho na mesa",
+    });
+  }
+
+  return { returned, wasTheirTurn, newHostName, nextName: nextPlayer.id, finished };
+}
+
 async function seatFor(roomId: string) {
   const client = serverClient();
   const { count } = await client
@@ -506,6 +631,8 @@ export async function submitGuess(input: {
     titleTried,
     artistHit,
     titleHit,
+    artistGuess: input.artistGuess?.trim() ?? null,
+    titleGuess: input.titleGuess?.trim() ?? null,
     earnedTokens,
     bonusReason,
   };
@@ -724,7 +851,6 @@ export async function spendTokens(input: { code: string; token: string }) {
 }
 
 export async function removePlayer(input: { code: string; token: string; playerId: string }) {
-  const client = serverClient();
   const room = await loadRoom(input.code);
   const me = await loadPlayer(room, input.token);
 
@@ -736,7 +862,7 @@ export async function removePlayer(input: { code: string; token: string; playerI
     throw new ServiceError("o host não pode remover a si mesmo", 422);
   }
 
-  const { data: target } = await client
+  const { data: target } = await serverClient()
     .from("vt_players")
     .select("id, name, seat")
     .eq("id", input.playerId)
@@ -747,102 +873,79 @@ export async function removePlayer(input: { code: string; token: string; playerI
     throw new ServiceError("esse jogador não está nesta sala", 404);
   }
 
-  const { data: roster } = await client
-    .from("vt_players")
-    .select("id, seat")
-    .eq("room_id", room.id)
-    .order("seat");
-
-  const others = (roster ?? []).filter((player) => player.id !== target.id);
-
-  if (others.length === 0) {
-    throw new ServiceError("não dá para esvaziar a sala", 409);
-  }
-
-  const { data: theirCards } = await client
-    .from("vt_timeline_cards")
-    .select("track_id")
-    .eq("player_id", target.id);
-
-  if (theirCards && theirCards.length > 0) {
-    const { data: lastPosition } = await client
-      .from("vt_draw_pile")
-      .select("position")
-      .eq("room_id", room.id)
-      .order("position", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    let position = ((lastPosition?.position as number | undefined) ?? 0) + 1;
-
-    await client.from("vt_timeline_cards").delete().eq("player_id", target.id);
-
-    await client.from("vt_draw_pile").insert(
-      theirCards.map((card) => ({
-        room_id: room.id,
-        track_id: card.track_id,
-        position: position++,
-      })),
-    );
-  }
-
-  const wasTheirTurn = room.turn_player_id === target.id;
-  const following = nextSeat(target.seat as number, others.map((player) => player.seat as number));
-  const nextPlayer = others.find((player) => player.seat === following) ?? others[0];
-
-  await client.from("vt_players").delete().eq("id", target.id);
-
-  if (wasTheirTurn) {
-    await client
-      .from("vt_rooms")
-      .update({
-        turn_player_id: nextPlayer.id,
-        current_track_id: null,
-        current_started_at: null,
-        turn_started_at: new Date().toISOString(),
-      })
-      .eq("id", room.id);
-  }
+  const outcome = await detachPlayer({
+    room,
+    target: { id: target.id as string, name: target.name as string, seat: target.seat as number },
+  });
 
   await record({
     roomId: room.id,
     type: "PLAYER_REMOVED",
     actorId: me.id,
-    detail: `${target.name} saiu da mesa, as cartas dela voltaram para o monte`,
+    detail: `${target.name} foi tirada da mesa por ${me.name}`,
   });
 
-  if (others.length === 1 && room.phase === RoomPhase.Playing) {
-    await client
-      .from("vt_rooms")
-      .update({
-        phase: RoomPhase.Finished,
-        winner_player_id: others[0].id,
-        finished_at: new Date().toISOString(),
-        current_track_id: null,
-      })
-      .eq("id", room.id)
-      .is("winner_player_id", null);
+  await publishNotice({
+    roomId: room.id,
+    kind: "REMOVED",
+    title: `${target.name} saiu da mesa`,
+    text: `${me.name} tirou ${target.name} da partida. ${
+      outcome.returned === 1
+        ? "1 carta voltou"
+        : `${outcome.returned} cartas voltaram`
+    } para o monte${outcome.wasTheirTurn ? " e a vez passou para o próximo" : ""}.`,
+  });
 
-    await record({
-      roomId: room.id,
-      type: "MATCH_WON",
-      actorId: others[0].id as string,
-      detail: "sobrou sozinho na mesa",
-    });
+  return { removed: target.name as string, turnPassed: outcome.wasTheirTurn };
+}
+
+export async function leaveRoom(input: { code: string; token: string }) {
+  const room = await loadRoom(input.code);
+  const me = await loadPlayer(room, input.token);
+
+  const { count } = await serverClient()
+    .from("vt_players")
+    .select("id", { count: "exact", head: true })
+    .eq("room_id", room.id);
+
+  if ((count ?? 0) <= 1) {
+    return { left: true as const, lastOne: true as const };
   }
 
-  return { removed: target.name as string, turnPassed: wasTheirTurn };
+  const outcome = await detachPlayer({
+    room,
+    target: { id: me.id, name: me.name, seat: me.seat },
+  });
+
+  await record({
+    roomId: room.id,
+    type: "PLAYER_LEFT",
+    actorId: null,
+    detail: `${me.name} saiu da partida`,
+  });
+
+  await publishNotice({
+    roomId: room.id,
+    kind: "LEFT",
+    title: `${me.name} saiu da partida`,
+    text: [
+      outcome.returned === 1 ? "1 carta voltou" : `${outcome.returned} cartas voltaram`,
+      "para o monte",
+      outcome.wasTheirTurn ? "e a vez passou para o próximo" : "",
+      outcome.newHostName ? `· ${outcome.newHostName} virou o host` : "",
+    ]
+      .filter(Boolean)
+      .join(" "),
+  });
+
+  return { left: true as const, lastOne: false as const };
 }
 
 export async function skipIdleTurn(input: { code: string }) {
   const client = serverClient();
   const room = await loadRoom(input.code);
 
-  if (room.phase !== RoomPhase.Playing || !room.turn_player_id) {
-    return { skipped: false as const };
-  }
-
-  if (room.current_track_id) {
+  if (room.phase !== RoomPhase.Playing || !room.turn_player_id || room.current_track_id) {
     return { skipped: false as const };
   }
 
@@ -857,9 +960,7 @@ export async function skipIdleTurn(input: { code: string }) {
     return { skipped: false as const };
   }
 
-  const elapsed = (Date.now() - startedAt) / 1000;
-
-  if (elapsed < room.turn_seconds) {
+  if ((Date.now() - startedAt) / 1000 < room.turn_seconds) {
     return { skipped: false as const };
   }
 
@@ -898,6 +999,13 @@ export async function skipIdleTurn(input: { code: string }) {
     type: "TURN_TIMEOUT",
     actorId: current.id as string,
     detail: `demorou mais de ${room.turn_seconds} segundos, a vez passou para ${nextPlayer.name}`,
+  });
+
+  await publishNotice({
+    roomId: room.id,
+    kind: "TIMEOUT",
+    title: `${current.name} perdeu a vez`,
+    text: `Passou de ${room.turn_seconds} segundos sem tocar a música, então a vez foi para ${nextPlayer.name}.`,
   });
 
   return {
