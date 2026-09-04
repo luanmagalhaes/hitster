@@ -6,16 +6,15 @@ import { HomeScreen } from "@/components/game/HomeScreen";
 import { NoticeModal } from "@/components/game/NoticeModal";
 import { ResultModal } from "@/components/game/ResultModal";
 import { StarterRoll } from "@/components/game/StarterRoll";
-import { UpdateBanner } from "@/components/game/UpdateBanner";
 import { JoinScreen } from "@/components/game/JoinScreen";
 import { LobbyScreen } from "@/components/game/LobbyScreen";
 import { TableScreen } from "@/components/game/TableScreen";
 import { VictoryScreen } from "@/components/game/VictoryScreen";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
-import { useLiveVersion } from "@/hooks/useLiveVersion";
 import { useRoom } from "@/hooks/useRoom";
 import { useSession } from "@/hooks/useSession";
 import { api } from "@/lib/api";
+import { rememberStarter, starterSeen } from "@/lib/session";
 import type { DeckKind } from "@/types/track";
 
 type View = "HOME" | "CREATE" | "JOIN";
@@ -28,13 +27,12 @@ export function GameApp() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [seenResultId, setSeenResultId] = useState<string | null>(null);
-  const [seenStarter, setSeenStarter] = useState<string | null>(null);
+  const [seenStarter, setSeenStarter] = useState<string | null>(() => starterSeen());
   const [previews, setPreviews] = useState<Record<string, string | null>>({});
   const [seenNoticeId, setSeenNoticeId] = useState<string | null>(null);
   const [confirmingLeave, setConfirmingLeave] = useState(false);
 
   const { state, refresh } = useRoom(session?.code ?? null, session?.accessToken ?? null);
-  const live = useLiveVersion(state?.version);
 
   useEffect(() => {
     if (!error) {
@@ -247,13 +245,14 @@ export function GameApp() {
 
   return (
     <>
-      {live.stale ? <UpdateBanner onReload={live.reloadNow} /> : null}
-
       {showStarter && starterId ? (
         <StarterRoll
           starterName={starterName}
           isMe={starterId === state.meId}
-          onDone={() => setSeenStarter(starterId)}
+          onDone={() => {
+            rememberStarter(starterId);
+            setSeenStarter(starterId);
+          }}
         />
       ) : null}
 

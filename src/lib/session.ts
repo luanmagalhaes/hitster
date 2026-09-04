@@ -7,6 +7,7 @@ export interface Session {
 
 const key = "vitrola.session";
 const recentKey = "vitrola.recent";
+const starterKey = "vitrola.starter";
 const maxRecent = 6;
 const listeners = new Set<() => void>();
 
@@ -208,4 +209,24 @@ export function clearSession() {
   }
 
   listeners.forEach((listener) => listener());
+}
+
+export function starterSeen(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    return window.localStorage.getItem(starterKey);
+  } catch {
+    return null;
+  }
+}
+
+export function rememberStarter(starterId: string) {
+  try {
+    window.localStorage.setItem(starterKey, starterId);
+  } catch {
+    return;
+  }
 }
