@@ -281,15 +281,17 @@ export function TableScreen({
                 : "Aguarde a rodada da pessoa. Você pode ir montando o ouvido."}
         </span>
 
-        {playing && !thiefName ? (
+        {playing && !thiefName && !myTurn ? (
           <p className="mt-2 text-xs font-semibold opacity-75">
             {stealCountdown > 0
-              ? myTurn
-                ? `${stealCountdown}s antes de liberarem o roubo`
-                : `${stealCountdown}s e você pode roubar`
-              : myTurn
-                ? "Roubo liberado — qualquer um pode tomar essa música"
-                : "Roubo liberado"}
+              ? `${stealCountdown}s e você pode roubar essa música`
+              : "Roubo liberado — é sua chance"}
+          </p>
+        ) : null}
+
+        {playing && !thiefName && myTurn && stealCountdown > 0 ? (
+          <p className="mt-2 text-xs font-semibold opacity-75">
+            {stealCountdown}s para responder antes que liberem o roubo
           </p>
         ) : null}
 

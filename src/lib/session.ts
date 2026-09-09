@@ -15,6 +15,18 @@ let cachedRaw: string | null = null;
 let cached: Session | null = null;
 let bootstrapped = false;
 
+function seatStore(): Storage | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    return window.sessionStorage.getItem(key) ? window.sessionStorage : window.localStorage;
+  } catch {
+    return null;
+  }
+}
+
 function bootstrap() {
   if (bootstrapped || typeof window === "undefined") {
     return;
@@ -28,7 +40,7 @@ function bootstrap() {
 
   if (code && token && process.env.NODE_ENV !== "production") {
     try {
-      window.localStorage.setItem(
+      window.sessionStorage.setItem(
         key,
         JSON.stringify({
           code: code.toUpperCase(),
@@ -166,7 +178,7 @@ export function sessionSnapshot(): Session | null {
   let raw: string | null = null;
 
   try {
-    raw = window.localStorage.getItem(key);
+    raw = seatStore()?.getItem(key) ?? null;
   } catch {
     raw = null;
   }
@@ -192,7 +204,7 @@ export function serverSessionSnapshot(): Session | null {
 
 export function saveSession(next: Session) {
   try {
-    window.localStorage.setItem(key, JSON.stringify(next));
+    (seatStore() ?? window.localStorage).setItem(key, JSON.stringify(next));
   } catch {
     return;
   }
@@ -203,6 +215,7 @@ export function saveSession(next: Session) {
 
 export function clearSession() {
   try {
+    window.sessionStorage.removeItem(key);
     window.localStorage.removeItem(key);
   } catch {
     return;
