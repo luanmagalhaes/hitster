@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { Thief } from "@/components/ui/Thief";
 import { Vinyl } from "@/components/ui/Vinyl";
 import type { SharedResult } from "@/types/room";
 import { tokens } from "@/utils/plural";
@@ -75,12 +76,21 @@ export function ResultModal({ result, isMe, onClose }: ResultModalProps) {
             result.correct ? "bg-aqua" : "bg-magenta"
           } ${result.correct ? "text-ink" : "text-cream"}`}
         >
-          <Vinyl spinning={result.correct} className="w-16 shrink-0" />
+          {result.stolen ? (
+            <Thief className="w-16 shrink-0" winking={result.correct} />
+          ) : (
+            <Vinyl spinning={result.correct} className="w-16 shrink-0" />
+          )}
           <div className="min-w-0">
             <span className="display block text-2xl leading-tight">
               {result.correct ? `${who} acertou!` : `${who} errou`}
             </span>
             <span className="mt-1 block text-sm opacity-85">{subtitle}</span>
+            {result.stolen ? (
+              <span className="display mt-2 inline-block rounded-full border-2 border-ink bg-sun px-2.5 py-0.5 text-[0.65rem] uppercase tracking-[0.12em] text-ink">
+                roubou de {result.victimName ?? "alguém"}
+              </span>
+            ) : null}
           </div>
         </div>
 
@@ -98,6 +108,20 @@ export function ResultModal({ result, isMe, onClose }: ResultModalProps) {
         </div>
 
         <ul className="flex flex-col gap-2 p-5">
+          {result.lostTokens > 0 ? (
+            <li className="flex items-start gap-3 rounded-2xl border-2 border-ink bg-magenta p-3 text-cream">
+              <span className="display flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-ink text-base text-magenta">
+                −
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="display block text-sm">O roubo saiu caro</span>
+                <span className="mt-0.5 block text-xs leading-snug opacity-90">
+                  {isMe ? "Você perdeu" : `${result.playerName} perdeu`} {tokens(result.lostTokens)}{" "}
+                  por roubar e errar.
+                </span>
+              </span>
+            </li>
+          ) : null}
           <Line
             hit={result.correct}
             label={result.correct ? "Posição certa" : "Posição errada"}

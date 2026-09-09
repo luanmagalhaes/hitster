@@ -22,6 +22,17 @@ export interface SharedResult {
   titleGuess: string | null;
   earnedTokens: number;
   bonusReason: string | null;
+  stolen: boolean;
+  victimName: string | null;
+  lostTokens: number;
+}
+
+export interface StealNews {
+  id: string;
+  thiefId: string;
+  thiefName: string;
+  victimId: string;
+  victimName: string;
 }
 
 export interface RoomNotice {
@@ -50,6 +61,10 @@ export interface RoomRow {
   turn_seconds: number;
   last_result: SharedResult | null;
   last_notice: RoomNotice | null;
+  steal_player_id: string | null;
+  steal_started_at: string | null;
+  steal_seconds: number;
+  last_steal: StealNews | null;
 }
 
 export interface PlayerRow {

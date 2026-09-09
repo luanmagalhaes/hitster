@@ -61,6 +61,13 @@ export const api = {
       body: JSON.stringify({ hostName, deck, difficulty }),
     }),
 
+  steal: (code: string, token: string) =>
+    request<{ stolen: true; victimName: string }>(
+      `/api/rooms/${code}/steal`,
+      { method: "POST" },
+      token,
+    ),
+
   timeout: (code: string) =>
     request<{ skipped: boolean; from?: string; to?: string }>(`/api/rooms/${code}/timeout`, {
       method: "POST",

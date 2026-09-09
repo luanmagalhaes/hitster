@@ -73,9 +73,9 @@ export function pickSpreadSeeds(
 }
 
 export const difficultyPresets = {
-  CLASSIC: { seedCards: 1, targetCards: 10, tokenCost: 3 },
-  QUICK: { seedCards: 3, targetCards: 8, tokenCost: 3 },
-  MARATHON: { seedCards: 5, targetCards: 12, tokenCost: 4 },
+  CLASSIC: { seedCards: 1, targetCards: 10, tokenCost: 5 },
+  QUICK: { seedCards: 3, targetCards: 8, tokenCost: 5 },
+  MARATHON: { seedCards: 5, targetCards: 12, tokenCost: 6 },
 } as const;
 
 export type Difficulty = keyof typeof difficultyPresets;

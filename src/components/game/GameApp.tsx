@@ -1,11 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AudioDeck } from "@/components/game/AudioDeck";
 import { HomeScreen } from "@/components/game/HomeScreen";
 import { NoticeModal } from "@/components/game/NoticeModal";
 import { ResultModal } from "@/components/game/ResultModal";
 import { StarterRoll } from "@/components/game/StarterRoll";
+import { StealModal } from "@/components/game/StealModal";
+import { StealNewsModal } from "@/components/game/StealNewsModal";
 import { JoinScreen } from "@/components/game/JoinScreen";
 import { LobbyScreen } from "@/components/game/LobbyScreen";
 import { TableScreen } from "@/components/game/TableScreen";
@@ -13,9 +15,12 @@ import { VictoryScreen } from "@/components/game/VictoryScreen";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { useRoom } from "@/hooks/useRoom";
 import { useSession } from "@/hooks/useSession";
+import { useNow } from "@/hooks/useNow";
 import { useTurnBuzz } from "@/hooks/useTurnBuzz";
+import { secondsUntilSteal, stealBlock } from "@/lib/game/steal";
 import { api } from "@/lib/api";
 import { rememberStarter, starterSeen } from "@/lib/session";
+import type { RoomRow } from "@/types/room";
 import type { DeckKind } from "@/types/track";
 
 type View = "HOME" | "CREATE" | "JOIN";
@@ -32,6 +37,8 @@ export function GameApp() {
   const [previews, setPreviews] = useState<Record<string, string | null>>({});
   const [seenNoticeId, setSeenNoticeId] = useState<string | null>(null);
   const [confirmingLeave, setConfirmingLeave] = useState(false);
+  const [seenStealId, setSeenStealId] = useState<string | null>(null);
+  const [passedOnTrack, setPassedOnTrack] = useState<string | null>(null);
 
   const { state, refresh } = useRoom(session?.code ?? null, session?.accessToken ?? null);
 
@@ -59,6 +66,30 @@ export function GameApp() {
 
   useTurnBuzz(myTurn, state?.room.phase === "PLAYING");
 
+  const now = useNow(1000);
+  const trackStartedAt = state?.room.current_started_at ?? null;
+  const listenedSeconds = trackStartedAt ? (now - new Date(trackStartedAt).getTime()) / 1000 : 0;
+  const stealSeconds = state?.room.steal_seconds ?? 30;
+  const stolenByMe = Boolean(state?.meId && state.room.steal_player_id === state.meId);
+  const myTokens = state?.players.find((player) => player.id === state.meId)?.tokens ?? 0;
+  const stealShut = state
+    ? stealBlock({
+        playing: state.room.phase === "PLAYING",
+        trackPlaying: Boolean(state.room.current_track_id) && trackStartedAt !== null,
+        isMyTurn: myTurn,
+        stolenBy: state.room.steal_player_id,
+        elapsedSeconds: listenedSeconds,
+        waitSeconds: stealSeconds,
+        tokens: myTokens,
+      })
+    : "NOT_PLAYING";
+  const stealRipe = stealShut === null || stealShut === "NO_STAKE";
+  const offerSteal = stealRipe && passedOnTrack !== state?.room.current_track_id;
+  const victimName =
+    state?.players.find((player) => player.id === state.room.turn_player_id)?.name ?? "a pessoa";
+  const stealNews = state?.room.last_steal ?? null;
+  const freshSteal = stealNews && stealNews.id !== seenStealId ? stealNews : null;
+
   const notice = state?.room.last_notice ?? null;
   const visibleNotice = notice && notice.id !== seenNoticeId ? notice : null;
   const sharedResult = state?.room.last_result ?? null;
@@ -68,17 +99,48 @@ export function GameApp() {
   const turnSeconds = state?.room.turn_seconds ?? 60;
   const playingPhase = state?.room.phase === "PLAYING";
 
+  const clockRef = useRef<RoomRow | null>(null);
+
+  useEffect(() => {
+    clockRef.current = state?.room ?? null;
+  }, [state?.room]);
+
   useEffect(() => {
     const code = session?.code;
 
-    if (!code || !playingPhase || currentTrackId || !turnStartedAt) {
+    if (!code || !playingPhase) {
       return;
     }
 
-    const check = async () => {
-      const elapsed = (Date.now() - new Date(turnStartedAt).getTime()) / 1000;
+    const overdue = () => {
+      const room = clockRef.current;
 
-      if (elapsed < turnSeconds) {
+      if (!room) {
+        return false;
+      }
+
+      const since = (stamp: string | null) =>
+        stamp ? (Date.now() - new Date(stamp).getTime()) / 1000 : null;
+
+      if (!room.current_track_id) {
+        const waited = since(room.turn_started_at);
+
+        return waited !== null && waited >= room.turn_seconds;
+      }
+
+      if (room.steal_player_id) {
+        const held = since(room.steal_started_at);
+
+        return held !== null && held >= room.steal_seconds;
+      }
+
+      const open = since(room.current_started_at);
+
+      return open !== null && open >= room.turn_seconds + room.steal_seconds;
+    };
+
+    const check = async () => {
+      if (!overdue()) {
         return;
       }
 
@@ -93,7 +155,7 @@ export function GameApp() {
     const timer = window.setInterval(() => void check(), 3000);
 
     return () => window.clearInterval(timer);
-  }, [session?.code, playingPhase, currentTrackId, turnStartedAt, turnSeconds, refresh]);
+  }, [session?.code, playingPhase, refresh]);
 
   useEffect(() => {
     const code = session?.code;
@@ -250,6 +312,27 @@ export function GameApp() {
 
   return (
     <>
+      {freshSteal ? (
+        <StealNewsModal
+          news={freshSteal}
+          myId={state.meId}
+          onClose={() => setSeenStealId(freshSteal.id)}
+        />
+      ) : offerSteal ? (
+        <StealModal
+          victimName={victimName}
+          myTokens={myTokens}
+          busy={busy}
+          onSteal={() =>
+            run(async () => {
+              await api.steal(session.code, session.accessToken);
+              await refresh();
+            })
+          }
+          onDismiss={() => setPassedOnTrack(state.room.current_track_id)}
+        />
+      ) : null}
+
       {showStarter && starterId ? (
         <StarterRoll
           starterName={starterName}
@@ -284,6 +367,13 @@ export function GameApp() {
       error={error}
       turnStartedAt={turnStartedAt}
       turnSeconds={turnSeconds}
+      stolenByMe={stolenByMe}
+      stealCountdown={secondsUntilSteal(listenedSeconds, stealSeconds)}
+      thiefName={
+        state.room.steal_player_id
+          ? (state.players.find((player) => player.id === state.room.steal_player_id)?.name ?? null)
+          : null
+      }
       audio={
         <AudioDeck
           previewUrl={currentTrackId ? previews[currentTrackId] ?? null : null}

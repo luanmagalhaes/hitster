@@ -1,6 +1,7 @@
 import { tracksForDeck, trackById } from "@/data/tracks";
 import { answerMatches, findPreview } from "@/lib/deezer";
 import { difficultyPresets, pickSpreadSeeds, type Difficulty } from "@/lib/game/seeds";
+import { stealBlock, stealBlockMessage, stealPenalty } from "@/lib/game/steal";
 import {
   correctSlotIndex,
   isSlotCorrect,
@@ -526,7 +527,13 @@ export async function submitGuess(input: {
     throw new ServiceError("a partida não está em andamento", 409);
   }
 
-  if (room.turn_player_id !== me.id) {
+  const stealing = Boolean(room.steal_player_id) && room.steal_player_id === me.id;
+
+  if (room.steal_player_id && !stealing) {
+    throw new ServiceError("essa rodada foi roubada, a resposta agora é de quem roubou", 409);
+  }
+
+  if (!stealing && room.turn_player_id !== me.id) {
     throw new ServiceError("não é a sua vez", 409);
   }
 
@@ -569,12 +576,24 @@ export async function submitGuess(input: {
           : "Acertou a música: +1 ficha. Cravando o artista também seriam 2."
         : "Errou os dois, nenhuma ficha dessa vez.";
 
-  if (earnedTokens > 0) {
+  const lostTokens = stealing && !correct ? Math.min(stealPenalty, me.tokens) : 0;
+  const tokenDelta = earnedTokens - lostTokens;
+
+  if (tokenDelta !== 0) {
     await client
       .from("vt_players")
-      .update({ tokens: me.tokens + earnedTokens })
+      .update({ tokens: me.tokens + tokenDelta })
       .eq("id", me.id);
   }
+
+  const victim = stealing
+    ? await client
+        .from("vt_players")
+        .select("id, name")
+        .eq("id", room.turn_player_id as string)
+        .maybeSingle()
+        .then((row) => row.data)
+    : null;
 
   await client.from("vt_guesses").insert({
     room_id: room.id,
@@ -606,6 +625,8 @@ export async function submitGuess(input: {
     earnedTokens > 0
       ? `+${earnedTokens} ${earnedTokens === 1 ? "ficha" : "fichas"}`
       : null,
+    lostTokens > 0 ? `roubo falhou: -${lostTokens} fichas` : null,
+    stealing && correct ? `roubou de ${victim?.name ?? "alguém"}` : null,
   ]
     .filter(Boolean)
     .join(" · ");
@@ -634,6 +655,9 @@ export async function submitGuess(input: {
     titleGuess: input.titleGuess?.trim() ?? null,
     earnedTokens,
     bonusReason,
+    stolen: stealing,
+    victimName: victim?.name ?? null,
+    lostTokens,
   };
 
   await client.from("vt_rooms").update({ last_result: resultPayload }).eq("id", room.id);
@@ -647,7 +671,10 @@ export async function submitGuess(input: {
   const roster = refreshed ?? [];
   const winner = roster.find((player) => (player.timeline_count as number) >= room.target_cards);
   const seats = roster.map((player) => player.seat as number);
-  const following = nextSeat(me.seat, seats);
+  const owner = stealing
+    ? (roster.find((player) => player.id === room.turn_player_id) ?? null)
+    : null;
+  const following = nextSeat((owner?.seat as number) ?? me.seat, seats);
   const nextPlayer = roster.find((player) => player.seat === following);
 
   if (winner) {
@@ -659,6 +686,9 @@ export async function submitGuess(input: {
         finished_at: new Date().toISOString(),
         current_track_id: null,
         current_started_at: null,
+        steal_player_id: null,
+        steal_started_at: null,
+        last_steal: null,
       })
       .eq("id", room.id);
 
@@ -669,7 +699,10 @@ export async function submitGuess(input: {
       .update({
         current_track_id: null,
         current_started_at: null,
-        turn_player_id: nextPlayer?.id ?? me.id,
+        steal_player_id: null,
+        steal_started_at: null,
+        last_steal: null,
+        turn_player_id: nextPlayer?.id ?? owner?.id ?? me.id,
         turn_started_at: new Date().toISOString(),
       })
       .eq("id", room.id);
@@ -680,6 +713,106 @@ export async function submitGuess(input: {
     correctSlot: correct ? input.slotIndex : rightSlot,
     winnerId: winner?.id ?? null,
   };
+}
+
+export async function claimSteal(input: { code: string; token: string }) {
+  const client = serverClient();
+  const room = await loadRoom(input.code);
+  const me = await loadPlayer(room, input.token);
+
+  const startedAt = room.current_started_at ? new Date(room.current_started_at).getTime() : null;
+  const elapsedSeconds = startedAt ? (Date.now() - startedAt) / 1000 : 0;
+
+  const block = stealBlock({
+    playing: room.phase === RoomPhase.Playing,
+    trackPlaying: Boolean(room.current_track_id) && startedAt !== null,
+    isMyTurn: room.turn_player_id === me.id,
+    stolenBy: room.steal_player_id,
+    elapsedSeconds,
+    waitSeconds: room.steal_seconds,
+    tokens: me.tokens,
+  });
+
+  if (block) {
+    throw new ServiceError(stealBlockMessage(block), 409);
+  }
+
+  const { data: victim } = await client
+    .from("vt_players")
+    .select("id, name")
+    .eq("id", room.turn_player_id as string)
+    .maybeSingle();
+
+  const news = {
+    id: `${room.id}-steal-${Date.now()}`,
+    thiefId: me.id,
+    thiefName: me.name,
+    victimId: victim?.id ?? "",
+    victimName: victim?.name ?? "alguém",
+  };
+
+  const { data: claimed } = await client
+    .from("vt_rooms")
+    .update({ steal_player_id: me.id, last_steal: news, steal_started_at: new Date().toISOString() })
+    .eq("id", room.id)
+    .is("steal_player_id", null)
+    .select("id");
+
+  if (!claimed || claimed.length === 0) {
+    throw new ServiceError(stealBlockMessage("TAKEN"), 409);
+  }
+
+  await record({
+    roomId: room.id,
+    type: "STEAL_CLAIMED",
+    actorId: me.id,
+    trackId: room.current_track_id,
+    detail: `roubou a vez de ${news.victimName}`,
+  });
+
+  return { stolen: true as const, victimName: news.victimName };
+}
+
+export async function expireSteal(input: { code: string }) {
+  const client = serverClient();
+  const room = await loadRoom(input.code);
+
+  if (room.phase !== RoomPhase.Playing || !room.steal_player_id || !room.last_steal) {
+    return { expired: false as const };
+  }
+
+  const claimedAt = room.steal_started_at ? new Date(room.steal_started_at).getTime() : null;
+
+  if (!claimedAt || (Date.now() - claimedAt) / 1000 < room.steal_seconds) {
+    return { expired: false as const };
+  }
+
+  const { data: released } = await client
+    .from("vt_rooms")
+    .update({ steal_player_id: null, steal_started_at: null })
+    .eq("id", room.id)
+    .eq("steal_player_id", room.steal_player_id)
+    .select("id");
+
+  if (!released || released.length === 0) {
+    return { expired: false as const };
+  }
+
+  await record({
+    roomId: room.id,
+    type: "STEAL_EXPIRED",
+    actorId: room.steal_player_id,
+    detail: "roubou e não respondeu, a rodada voltou a ficar aberta",
+  });
+
+  await publishNotice({
+    roomId: room.id,
+    kind: "TIMEOUT",
+    title: `${room.last_steal.thiefName} roubou e travou`,
+    text: `${room.last_steal.victimName} pode responder de novo, e o roubo está liberado para quem quiser`,
+  });
+
+  return { expired: true as const, thiefName: room.last_steal.thiefName };
 }
 
 export async function roomState(input: { code: string; token?: string }) {
@@ -745,7 +878,11 @@ export async function skipTrack(input: { code: string; token: string }) {
   const room = await loadRoom(input.code);
   const me = await loadPlayer(room, input.token);
 
-  if (room.turn_player_id !== me.id) {
+  if (room.steal_player_id && room.steal_player_id !== me.id) {
+    throw new ServiceError("essa rodada foi roubada, não dá para pular a faixa agora", 409);
+  }
+
+  if (!room.steal_player_id && room.turn_player_id !== me.id) {
     throw new ServiceError("não é a sua vez", 409);
   }
 
@@ -755,7 +892,13 @@ export async function skipTrack(input: { code: string; token: string }) {
 
   await client
     .from("vt_rooms")
-    .update({ current_track_id: null, current_started_at: null })
+    .update({
+      current_track_id: null,
+      current_started_at: null,
+      steal_player_id: null,
+      steal_started_at: null,
+      last_steal: null,
+    })
     .eq("id", room.id);
 
   await record({ roomId: room.id, type: "TRACK_SKIPPED", actorId: me.id });
@@ -767,6 +910,10 @@ export async function spendTokens(input: { code: string; token: string }) {
   const client = serverClient();
   const room = await loadRoom(input.code);
   const me = await loadPlayer(room, input.token);
+
+  if (room.steal_player_id === me.id) {
+    throw new ServiceError("você roubou esta rodada, responda antes de trocar fichas", 409);
+  }
 
   if (room.phase !== RoomPhase.Playing) {
     throw new ServiceError("a partida não está em andamento", 409);
@@ -943,11 +1090,14 @@ export async function skipIdleTurn(input: { code: string }) {
   const client = serverClient();
   const room = await loadRoom(input.code);
 
-  if (room.phase !== RoomPhase.Playing || !room.turn_player_id || room.current_track_id) {
+  if (room.phase !== RoomPhase.Playing || !room.turn_player_id) {
     return { skipped: false as const };
   }
 
-  const startedAt = room.turn_started_at ? new Date(room.turn_started_at).getTime() : null;
+  const stalled = Boolean(room.current_track_id);
+  const limitSeconds = stalled ? room.turn_seconds + room.steal_seconds : room.turn_seconds;
+  const marker = stalled ? room.current_started_at : room.turn_started_at;
+  const startedAt = marker ? new Date(marker).getTime() : null;
 
   if (!startedAt) {
     await client
@@ -958,8 +1108,24 @@ export async function skipIdleTurn(input: { code: string }) {
     return { skipped: false as const };
   }
 
-  if ((Date.now() - startedAt) / 1000 < room.turn_seconds) {
+  if ((Date.now() - startedAt) / 1000 < limitSeconds) {
     return { skipped: false as const };
+  }
+
+  if (stalled && room.current_track_id) {
+    const { data: lastPosition } = await client
+      .from("vt_draw_pile")
+      .select("position")
+      .eq("room_id", room.id)
+      .order("position", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    await client.from("vt_draw_pile").insert({
+      room_id: room.id,
+      track_id: room.current_track_id,
+      position: ((lastPosition?.position as number | undefined) ?? 0) + 1,
+    });
   }
 
   const { data: roster } = await client
@@ -983,7 +1149,15 @@ export async function skipIdleTurn(input: { code: string }) {
 
   const { data: moved } = await client
     .from("vt_rooms")
-    .update({ turn_player_id: nextPlayer.id, turn_started_at: new Date().toISOString() })
+    .update({
+      turn_player_id: nextPlayer.id,
+      turn_started_at: new Date().toISOString(),
+      current_track_id: null,
+      current_started_at: null,
+      steal_player_id: null,
+      steal_started_at: null,
+      last_steal: null,
+    })
     .eq("id", room.id)
     .eq("turn_player_id", current.id)
     .select("id");
@@ -996,14 +1170,16 @@ export async function skipIdleTurn(input: { code: string }) {
     roomId: room.id,
     type: "TURN_TIMEOUT",
     actorId: current.id as string,
-    detail: `demorou mais de ${room.turn_seconds} segundos, a vez passou para ${nextPlayer.name}`,
+    detail: `demorou mais de ${limitSeconds} segundos, a vez passou para ${nextPlayer.name}`,
   });
 
   await publishNotice({
     roomId: room.id,
     kind: "TIMEOUT",
     title: `${current.name} perdeu a vez`,
-    text: `Passou de ${room.turn_seconds} segundos sem tocar a música, então a vez foi para ${nextPlayer.name}.`,
+    text: stalled
+      ? `A rodada ficou ${limitSeconds} segundos sem resposta, então a faixa voltou para o monte e a vez foi para ${nextPlayer.name}.`
+      : `Passou de ${limitSeconds} segundos sem tocar a música, então a vez foi para ${nextPlayer.name}.`,
   });
 
   return {

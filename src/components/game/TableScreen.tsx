@@ -20,6 +20,9 @@ interface TableScreenProps {
   error: string | null;
   turnStartedAt: string | null;
   turnSeconds: number;
+  stolenByMe: boolean;
+  stealCountdown: number;
+  thiefName: string | null;
   audio: ReactNode;
   onPlay: () => void;
   onGuess: (input: { slotIndex: number; artistGuess?: string; titleGuess?: string }) => void;
@@ -37,6 +40,8 @@ const eventLabels: Record<string, string> = {
   TOKENS_SPENT: "trocou fichas por carta",
   PLAYER_REMOVED: "tirou alguém da mesa",
   TURN_TIMEOUT: "demorou e perdeu a vez",
+  STEAL_CLAIMED: "ROUBOU",
+  STEAL_EXPIRED: "roubou e travou",
   STARTER_DRAWN: "foi sorteado para começar",
   GUESS_CORRECT: "ACERTOU",
   GUESS_WRONG: "ERROU",
@@ -46,6 +51,7 @@ const eventLabels: Record<string, string> = {
 const eventTones: Record<string, string> = {
   GUESS_CORRECT: "border-ink bg-aqua",
   GUESS_WRONG: "border-ink bg-magenta-soft",
+  STEAL_CLAIMED: "border-ink bg-grape-soft",
   MATCH_WON: "border-ink bg-sun-light",
 };
 
@@ -60,6 +66,9 @@ export function TableScreen({
   error,
   turnStartedAt,
   turnSeconds,
+  stolenByMe,
+  stealCountdown,
+  thiefName,
   audio,
   onPlay,
   onGuess,
@@ -91,6 +100,7 @@ export function TableScreen({
   );
 
   const pendingRemoval = players.find((player) => player.id === confirmingRemoval);
+  const robbedFromMe = Boolean(thiefName) && myTurn && !stolenByMe;
 
   return (
     <Screen wide>
@@ -251,15 +261,37 @@ export function TableScreen({
         className={`mb-5 rounded-3xl border-2 border-ink p-4 ${myTurn ? "bg-magenta text-cream" : "bg-paper text-ink"}`}
       >
         <span className="display block text-lg">
-          {myTurn ? "É a sua vez" : `Vez de ${turnPlayer?.name ?? "alguém"}`}
+          {stolenByMe
+            ? "Você roubou essa música"
+            : robbedFromMe
+              ? `${thiefName} roubou a sua vez`
+              : myTurn
+                ? "É a sua vez"
+                : `Vez de ${turnPlayer?.name ?? "alguém"}`}
         </span>
         <span className="mt-1 block text-sm opacity-80">
-          {myTurn
-            ? playing
-              ? "Ouça e escolha onde essa música entra na sua linha do tempo."
-              : "Toque a próxima música para começar a rodada."
-            : "Aguarde a rodada da pessoa. Você pode ir montando o ouvido."}
+          {stolenByMe
+            ? "Escolha onde ela entra na sua linha do tempo. Errar custa 2 fichas."
+            : robbedFromMe
+              ? "Perdeu essa rodada. Responda mais rápido na próxima."
+              : myTurn
+                ? playing
+                  ? "Ouça e escolha onde essa música entra na sua linha do tempo."
+                  : "Toque a próxima música para começar a rodada."
+                : "Aguarde a rodada da pessoa. Você pode ir montando o ouvido."}
         </span>
+
+        {playing && !thiefName ? (
+          <p className="mt-2 text-xs font-semibold opacity-75">
+            {stealCountdown > 0
+              ? myTurn
+                ? `${stealCountdown}s antes de liberarem o roubo`
+                : `${stealCountdown}s e você pode roubar`
+              : myTurn
+                ? "Roubo liberado — qualquer um pode tomar essa música"
+                : "Roubo liberado"}
+          </p>
+        ) : null}
 
         {!playing && turnStartedAt ? (
           <div className="mt-3">
@@ -301,7 +333,7 @@ export function TableScreen({
             trackId: card.track_id,
             isSeed: card.is_seed,
           }))}
-          canGuess={myTurn && playing}
+          canGuess={(myTurn || stolenByMe) && playing}
           busy={busy}
           onGuess={onGuess}
         />
