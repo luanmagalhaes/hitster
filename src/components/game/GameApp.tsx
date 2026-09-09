@@ -13,6 +13,7 @@ import { VictoryScreen } from "@/components/game/VictoryScreen";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { useRoom } from "@/hooks/useRoom";
 import { useSession } from "@/hooks/useSession";
+import { useTurnBuzz } from "@/hooks/useTurnBuzz";
 import { api } from "@/lib/api";
 import { rememberStarter, starterSeen } from "@/lib/session";
 import type { DeckKind } from "@/types/track";
@@ -53,6 +54,10 @@ export function GameApp() {
     !state?.room.current_track_id;
   const starterName =
     state?.players.find((player) => player.id === starterId)?.name ?? "alguém";
+
+  const myTurn = Boolean(state?.meId && state.room.turn_player_id === state.meId);
+
+  useTurnBuzz(myTurn, state?.room.phase === "PLAYING");
 
   const notice = state?.room.last_notice ?? null;
   const visibleNotice = notice && notice.id !== seenNoticeId ? notice : null;
