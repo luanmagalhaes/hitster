@@ -70,31 +70,29 @@ export function ResultModal({ result, isMe, onClose }: ResultModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/70 p-4 sm:items-center">
-      <div className="animate-sleeve-slide w-full max-w-md overflow-hidden rounded-[1.75rem] border-4 border-ink bg-paper shadow-[0_14px_0_var(--color-ink)]">
+      <div className="animate-sleeve-slide flex max-h-[calc(100dvh-2rem)] w-full max-w-md flex-col overflow-hidden rounded-[1.75rem] border-4 border-ink bg-paper shadow-[0_14px_0_var(--color-ink)]">
         <div
-          className={`relative flex items-center gap-4 p-5 ${
+          className={`relative flex shrink-0 flex-col items-center gap-2 px-5 py-5 text-center ${
             result.correct ? "bg-aqua" : "bg-magenta"
           } ${result.correct ? "text-ink" : "text-cream"}`}
         >
           {result.stolen ? (
-            <Thief className="w-16 shrink-0" winking={result.correct} />
+            <Thief className="w-14 shrink-0" winking={result.correct} />
           ) : (
-            <Vinyl spinning={result.correct} className="w-16 shrink-0" />
+            <Vinyl spinning={result.correct} className="w-14 shrink-0" />
           )}
-          <div className="min-w-0">
-            <span className="display block text-2xl leading-tight">
-              {result.correct ? `${who} acertou!` : `${who} errou`}
+          <span className="display block text-2xl leading-tight text-balance">
+            {result.correct ? `${who} acertou!` : `${who} errou`}
+          </span>
+          <span className="block text-sm leading-snug text-balance opacity-85">{subtitle}</span>
+          {result.stolen ? (
+            <span className="display inline-block max-w-full truncate rounded-full border-2 border-ink bg-sun px-2.5 py-0.5 text-[0.65rem] uppercase tracking-[0.12em] text-ink">
+              roubou de {result.victimName ?? "alguém"}
             </span>
-            <span className="mt-1 block text-sm opacity-85">{subtitle}</span>
-            {result.stolen ? (
-              <span className="display mt-2 inline-block rounded-full border-2 border-ink bg-sun px-2.5 py-0.5 text-[0.65rem] uppercase tracking-[0.12em] text-ink">
-                roubou de {result.victimName ?? "alguém"}
-              </span>
-            ) : null}
-          </div>
+          ) : null}
         </div>
 
-        <div className="border-b-4 border-ink bg-sun-light px-5 py-4 text-center">
+        <div className="shrink-0 border-b-4 border-ink bg-sun-light px-5 py-4 text-center">
           <span className="display block text-xs uppercase tracking-[0.2em] text-ink/55">
             A música era
           </span>
@@ -102,12 +100,12 @@ export function ResultModal({ result, isMe, onClose }: ResultModalProps) {
             {result.track.artist}
           </span>
           <span className="block text-sm text-ink/70">{result.track.title}</span>
-          <span className="display mt-2 block text-5xl leading-none text-ink">
+          <span className="display mt-2 block text-4xl leading-none text-ink sm:text-5xl">
             {result.track.year}
           </span>
         </div>
 
-        <ul className="flex flex-col gap-2 p-5">
+        <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain p-5">
           {result.lostCard ? (
             <li className="flex items-start gap-3 rounded-2xl border-2 border-ink bg-magenta p-3 text-cream">
               <span className="display flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-ink text-base text-magenta">
@@ -196,7 +194,7 @@ export function ResultModal({ result, isMe, onClose }: ResultModalProps) {
           ) : null}
         </ul>
 
-        <div className="px-5 pb-5">
+        <div className="shrink-0 border-t-2 border-ink/10 bg-paper px-5 pb-5 pt-4">
           <Button variant="ink" size="lg" fullWidth onClick={onClose}>
             Continuar
           </Button>

@@ -34,20 +34,20 @@ export function StarterRoll({ starterName, isMe, onDone }: StarterRollProps) {
   }, []);
 
   return (
-    <div className="stage-sun fixed inset-0 z-[60] flex flex-col items-center justify-center gap-7 px-8 text-center">
+    <div className="stage-sun fixed inset-0 z-[60] flex flex-col items-center justify-center gap-6 overflow-y-auto px-5 py-8 text-center">
       <span className="display text-sm uppercase tracking-[0.28em] text-ink/55">
         {rolling ? "Rolando o dado" : "Quem começa"}
       </span>
 
       <div className={rolling ? "animate-dice-shake" : "animate-dice-roll"}>
-        <Dice face={face} className="w-32 sm:w-40" />
+        <Dice face={face} className="w-24 sm:w-36" />
       </div>
 
       {rolling ? (
         <span className="display text-2xl text-ink/35">...</span>
       ) : (
-        <div className="animate-name-pop">
-          <span className="display block rounded-2xl border-4 border-ink bg-magenta px-6 py-3 text-3xl text-cream shadow-[0_8px_0_var(--color-ink)] sm:text-4xl">
+        <div className="animate-name-pop w-full max-w-[20rem]">
+          <span className="display block max-w-full break-words rounded-2xl border-4 border-ink bg-magenta px-4 py-3 text-2xl leading-tight text-cream shadow-[0_8px_0_var(--color-ink)] text-balance sm:text-3xl">
             {isMe ? "Você começa!" : starterName}
           </span>
           {isMe ? null : (

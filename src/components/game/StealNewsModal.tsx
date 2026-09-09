@@ -30,9 +30,9 @@ export function StealNewsModal({ news, myId, onClose }: StealNewsModalProps) {
 
   return (
     <div className="fixed inset-0 z-[57] flex items-end justify-center bg-ink/70 p-4 sm:items-center">
-      <div className="animate-sleeve-slide w-full max-w-sm overflow-hidden rounded-[1.75rem] border-4 border-ink bg-paper shadow-[0_14px_0_var(--color-ink)]">
+      <div className="animate-sleeve-slide flex max-h-[calc(100dvh-2rem)] w-full max-w-sm flex-col overflow-hidden rounded-[1.75rem] border-4 border-ink bg-paper shadow-[0_14px_0_var(--color-ink)]">
         <div
-          className={`flex items-center gap-3 p-5 ${
+          className={`flex shrink-0 items-center gap-3 p-5 ${
             robbed ? "bg-magenta text-cream" : thief ? "bg-aqua text-ink" : "bg-sun text-ink"
           }`}
         >
@@ -40,7 +40,7 @@ export function StealNewsModal({ news, myId, onClose }: StealNewsModalProps) {
           <span className="display text-xl leading-tight">{title}</span>
         </div>
 
-        <div className="p-5">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5">
           <p className="text-sm text-ink/75">{body}</p>
 
           {robbed ? (
