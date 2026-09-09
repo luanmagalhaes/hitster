@@ -8,9 +8,27 @@ import { copy } from "@/data/copy";
 import type { DeckKind } from "@/types/track";
 
 const levels = [
-  { key: "CLASSIC", label: "Clássico", hint: "1 carta · alvo 10 · como no original" },
-  { key: "QUICK", label: "Rápido", hint: "3 cartas · alvo 8 · partida curta" },
-  { key: "MARATHON", label: "Maratona", hint: "5 cartas · alvo 12 · jogo longo" },
+  {
+    key: "CLASSIC",
+    cards: "1 carta",
+    label: "Clássico",
+    hint: "alvo 10 · aperta sozinho",
+    standard: true,
+  },
+  {
+    key: "QUICK",
+    cards: "3 cartas",
+    label: "Rápido",
+    hint: "alvo 8 · já começa apertado",
+    standard: false,
+  },
+  {
+    key: "MARATHON",
+    cards: "5 cartas",
+    label: "Maratona",
+    hint: "alvo 12 · o mais difícil",
+    standard: false,
+  },
 ];
 
 interface JoinScreenProps {
@@ -132,7 +150,11 @@ export function JoinScreen({
                       : "bg-paper text-ink hover:bg-sun-light"
                   }`}
                 >
-                  <span className="block text-sm">{level.label}</span>
+                  <span className="block text-lg leading-none">{level.cards}</span>
+                  <span className="mt-1 block text-[0.7rem] font-semibold">
+                    {level.label}
+                    {level.standard ? " · padrão" : ""}
+                  </span>
                   <span className="mt-0.5 block text-[0.6rem] font-semibold opacity-70">
                     {level.hint}
                   </span>
@@ -140,8 +162,9 @@ export function JoinScreen({
               ))}
             </div>
             <p className="mt-2 text-xs text-ink/55">
-              No Clássico você começa com uma carta só e o jogo aperta sozinho: cada carta que entra
-              cria um intervalo novo e menor. Começar com mais cartas encurta a partida.
+              O número é quantas cartas de ano você recebe no começo. No Clássico é uma só, e o jogo
+              aperta sozinho: cada carta que entra cria um intervalo novo e menor. Começar com mais
+              cartas já nasce apertado e encurta a partida.
             </p>
           </div>
         ) : null}
