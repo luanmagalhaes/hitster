@@ -108,7 +108,7 @@ export function ResultModal({ result, isMe, onClose }: ResultModalProps) {
         </div>
 
         <ul className="flex flex-col gap-2 p-5">
-          {result.lostTokens > 0 ? (
+          {result.lostCard ? (
             <li className="flex items-start gap-3 rounded-2xl border-2 border-ink bg-magenta p-3 text-cream">
               <span className="display flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-ink text-base text-magenta">
                 −
@@ -116,8 +116,9 @@ export function ResultModal({ result, isMe, onClose }: ResultModalProps) {
               <span className="min-w-0 flex-1">
                 <span className="display block text-sm">O roubo saiu caro</span>
                 <span className="mt-0.5 block text-xs leading-snug opacity-90">
-                  {isMe ? "Você perdeu" : `${result.playerName} perdeu`} {tokens(result.lostTokens)}{" "}
-                  por roubar e errar.
+                  {isMe ? "Você perdeu" : `${result.playerName} perdeu`}{" "}
+                  {result.lostCard.artist} de {result.lostCard.year} por roubar e errar. A carta
+                  voltou pro monte.
                 </span>
               </span>
             </li>

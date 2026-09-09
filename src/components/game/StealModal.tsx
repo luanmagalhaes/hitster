@@ -2,12 +2,12 @@
 
 import { Button } from "@/components/ui/Button";
 import { Thief } from "@/components/ui/Thief";
-import { stealPenalty, stealStake } from "@/lib/game/steal";
-import { tokens } from "@/utils/plural";
+import { stealPenaltyCards } from "@/lib/game/steal";
+import { cards } from "@/utils/plural";
 
 interface StealModalProps {
   victimName: string;
-  myTokens: number;
+  spareCards: number;
   busy: boolean;
   onSteal: () => void;
   onDismiss: () => void;
@@ -15,12 +15,12 @@ interface StealModalProps {
 
 export function StealModal({
   victimName,
-  myTokens,
+  spareCards,
   busy,
   onSteal,
   onDismiss,
 }: StealModalProps) {
-  const broke = myTokens < stealStake;
+  const broke = spareCards < stealPenaltyCards;
 
   return (
     <div className="fixed inset-0 z-[56] flex items-end justify-center bg-ink/70 p-4 sm:items-center">
@@ -46,20 +46,20 @@ export function StealModal({
             <li className="flex items-start gap-2.5 rounded-2xl border-2 border-ink bg-magenta-soft px-3 py-2.5 text-ink">
               <span className="display shrink-0">✗</span>
               <span>
-                Se <strong>errar</strong>, perde {tokens(stealPenalty)}.
+                Se <strong>errar</strong>, perde {cards(stealPenaltyCards)} da sua linha do tempo.
               </span>
             </li>
           </ul>
 
           <p className="mt-3 text-xs text-ink/60">
             A música entra na <strong>sua</strong> linha do tempo, não na dela. Você tem{" "}
-            {tokens(myTokens)} agora.
+            {cards(spareCards)} para apostar, fora a de saída.
           </p>
 
           {broke ? (
             <p className="mt-3 rounded-2xl border-2 border-ink bg-sun-light px-3 py-2.5 text-xs font-semibold text-ink">
-              Precisa de {tokens(stealStake)} para arriscar. Acerte artista ou música na sua vez para
-              juntar.
+              Você só tem a carta de saída, e ela não entra na aposta. Ganhe uma carta na sua vez para
+              poder roubar.
             </p>
           ) : null}
 

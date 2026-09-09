@@ -2,8 +2,8 @@
 
 import { Button } from "@/components/ui/Button";
 import { Thief } from "@/components/ui/Thief";
-import { stealPenalty } from "@/lib/game/steal";
-import { tokens } from "@/utils/plural";
+import { stealPenaltyCards } from "@/lib/game/steal";
+import { cards } from "@/utils/plural";
 import type { StealNews } from "@/types/room";
 
 interface StealNewsModalProps {
@@ -23,9 +23,9 @@ export function StealNewsModal({ news, myId, onClose }: StealNewsModalProps) {
       : `${news.thiefName} roubou!`;
 
   const body = robbed
-    ? `${news.thiefName} cansou de esperar e roubou a sua música. Agora é ela que responde — e se errar, perde ${tokens(stealPenalty)}.`
+    ? `${news.thiefName} cansou de esperar e roubou a sua música. Agora é ela que responde — e se errar, perde ${cards(stealPenaltyCards)}.`
     : thief
-      ? `A música é sua agora. Escolha onde ela entra na sua linha do tempo. Errar custa ${tokens(stealPenalty)}.`
+      ? `A música é sua agora. Escolha onde ela entra na sua linha do tempo. Errar custa ${cards(stealPenaltyCards)} sua.`
       : `${news.thiefName} roubou a música de ${news.victimName}. Agora é com ela.`;
 
   return (

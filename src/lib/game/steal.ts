@@ -1,5 +1,4 @@
-export const stealPenalty = 2;
-export const stealStake = 2;
+export const stealPenaltyCards = 1;
 
 export type StealBlock =
   | "NOT_PLAYING"
@@ -7,7 +6,7 @@ export type StealBlock =
   | "MY_TURN"
   | "TAKEN"
   | "TOO_EARLY"
-  | "NO_STAKE";
+  | "NO_CARD";
 
 export interface StealChance {
   playing: boolean;
@@ -16,7 +15,7 @@ export interface StealChance {
   stolenBy: string | null;
   elapsedSeconds: number;
   waitSeconds: number;
-  tokens: number;
+  spareCards: number;
 }
 
 export function secondsUntilSteal(elapsedSeconds: number, waitSeconds: number): number {
@@ -44,8 +43,8 @@ export function stealBlock(chance: StealChance): StealBlock | null {
     return "TOO_EARLY";
   }
 
-  if (chance.tokens < stealStake) {
-    return "NO_STAKE";
+  if (chance.spareCards < stealPenaltyCards) {
+    return "NO_CARD";
   }
 
   return null;
@@ -58,7 +57,7 @@ export function stealBlockMessage(block: StealBlock): string {
     MY_TURN: "a vez é sua, não há o que roubar",
     TAKEN: "outra pessoa roubou primeiro",
     TOO_EARLY: "ainda dá tempo de quem está na vez responder",
-    NO_STAKE: `precisa de ${stealStake} fichas para arriscar o roubo`,
+    NO_CARD: "você só tem a carta de saída, e ela não pode ser apostada",
   };
 
   return messages[block];

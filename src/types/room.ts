@@ -24,7 +24,7 @@ export interface SharedResult {
   bonusReason: string | null;
   stolen: boolean;
   victimName: string | null;
-  lostTokens: number;
+  lostCard: { artist: string; title: string; year: number } | null;
 }
 
 export interface StealNews {

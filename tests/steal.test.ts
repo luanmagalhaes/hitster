@@ -3,7 +3,7 @@ import {
   secondsUntilSteal,
   stealBlock,
   stealBlockMessage,
-  stealStake,
+  stealPenaltyCards,
   type StealChance,
 } from "@/lib/game/steal";
 
@@ -15,7 +15,7 @@ function chance(patch: Partial<StealChance> = {}): StealChance {
     stolenBy: null,
     elapsedSeconds: 31,
     waitSeconds: 30,
-    tokens: 4,
+    spareCards: 3,
     ...patch,
   };
 }
@@ -42,12 +42,12 @@ describe("quem pode roubar", () => {
     expect(stealBlock(chance({ stolenBy: "outro-jogador" }))).toBe("TAKEN");
   });
 
-  it("exige fichas para bancar a aposta", () => {
-    expect(stealBlock(chance({ tokens: stealStake - 1 }))).toBe("NO_STAKE");
+  it("recusa quem só tem a carta de saída, que não pode ser apostada", () => {
+    expect(stealBlock(chance({ spareCards: 0 }))).toBe("NO_CARD");
   });
 
-  it("aceita com exatamente a aposta mínima", () => {
-    expect(stealBlock(chance({ tokens: stealStake }))).toBeNull();
+  it("aceita com exatamente uma carta para apostar", () => {
+    expect(stealBlock(chance({ spareCards: stealPenaltyCards }))).toBeNull();
   });
 
   it("recusa sem música tocando", () => {
@@ -59,7 +59,9 @@ describe("quem pode roubar", () => {
   });
 
   it("checa a partida antes de qualquer outra coisa", () => {
-    expect(stealBlock(chance({ playing: false, isMyTurn: true, tokens: 0 }))).toBe("NOT_PLAYING");
+    expect(stealBlock(chance({ playing: false, isMyTurn: true, spareCards: 0 }))).toBe(
+      "NOT_PLAYING",
+    );
   });
 });
 
@@ -80,6 +82,6 @@ describe("mensagens de recusa", () => {
   it("explica cada bloqueio em português", () => {
     expect(stealBlockMessage("TOO_EARLY")).toContain("tempo");
     expect(stealBlockMessage("TAKEN")).toContain("primeiro");
-    expect(stealBlockMessage("NO_STAKE")).toContain("fichas");
+    expect(stealBlockMessage("NO_CARD")).toContain("saída");
   });
 });

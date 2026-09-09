@@ -1,7 +1,7 @@
 import { tracksForDeck, trackById } from "@/data/tracks";
 import { answerMatches, findPreview } from "@/lib/deezer";
 import { difficultyPresets, pickSpreadSeeds, type Difficulty } from "@/lib/game/seeds";
-import { stealBlock, stealBlockMessage, stealPenalty } from "@/lib/game/steal";
+import { stealBlock, stealBlockMessage } from "@/lib/game/steal";
 import {
   correctSlotIndex,
   isSlotCorrect,
@@ -576,14 +576,50 @@ export async function submitGuess(input: {
           : "Acertou a música: +1 ficha. Cravando o artista também seriam 2."
         : "Errou os dois, nenhuma ficha dessa vez.";
 
-  const lostTokens = stealing && !correct ? Math.min(stealPenalty, me.tokens) : 0;
-  const tokenDelta = earnedTokens - lostTokens;
-
-  if (tokenDelta !== 0) {
+  if (earnedTokens > 0) {
     await client
       .from("vt_players")
-      .update({ tokens: me.tokens + tokenDelta })
+      .update({ tokens: me.tokens + earnedTokens })
       .eq("id", me.id);
+  }
+
+  let lostCard: { artist: string; title: string; year: number } | null = null;
+
+  if (stealing && !correct) {
+    const { data: doomed } = await client
+      .from("vt_timeline_cards")
+      .select("id, track_id, year")
+      .eq("player_id", me.id)
+      .eq("is_seed", false)
+      .order("placed_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (doomed) {
+      const losing = trackById(doomed.track_id as string);
+
+      lostCard = {
+        artist: losing?.artist ?? "faixa desconhecida",
+        title: losing?.title ?? "",
+        year: doomed.year as number,
+      };
+
+      await client.from("vt_timeline_cards").delete().eq("id", doomed.id);
+
+      const { data: lastPosition } = await client
+        .from("vt_draw_pile")
+        .select("position")
+        .eq("room_id", room.id)
+        .order("position", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      await client.from("vt_draw_pile").insert({
+        room_id: room.id,
+        track_id: doomed.track_id,
+        position: ((lastPosition?.position as number | undefined) ?? 0) + 1,
+      });
+    }
   }
 
   const victim = stealing
@@ -625,7 +661,7 @@ export async function submitGuess(input: {
     earnedTokens > 0
       ? `+${earnedTokens} ${earnedTokens === 1 ? "ficha" : "fichas"}`
       : null,
-    lostTokens > 0 ? `roubo falhou: -${lostTokens} fichas` : null,
+    lostCard ? `roubo falhou: perdeu ${lostCard.artist} de ${lostCard.year}` : null,
     stealing && correct ? `roubou de ${victim?.name ?? "alguém"}` : null,
   ]
     .filter(Boolean)
@@ -657,7 +693,7 @@ export async function submitGuess(input: {
     bonusReason,
     stolen: stealing,
     victimName: victim?.name ?? null,
-    lostTokens,
+    lostCard,
   };
 
   await client.from("vt_rooms").update({ last_result: resultPayload }).eq("id", room.id);
@@ -723,6 +759,12 @@ export async function claimSteal(input: { code: string; token: string }) {
   const startedAt = room.current_started_at ? new Date(room.current_started_at).getTime() : null;
   const elapsedSeconds = startedAt ? (Date.now() - startedAt) / 1000 : 0;
 
+  const { count: spareCards } = await client
+    .from("vt_timeline_cards")
+    .select("id", { count: "exact", head: true })
+    .eq("player_id", me.id)
+    .eq("is_seed", false);
+
   const block = stealBlock({
     playing: room.phase === RoomPhase.Playing,
     trackPlaying: Boolean(room.current_track_id) && startedAt !== null,
@@ -730,7 +772,7 @@ export async function claimSteal(input: { code: string; token: string }) {
     stolenBy: room.steal_player_id,
     elapsedSeconds,
     waitSeconds: room.steal_seconds,
-    tokens: me.tokens,
+    spareCards: spareCards ?? 0,
   });
 
   if (block) {

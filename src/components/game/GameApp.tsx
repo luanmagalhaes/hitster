@@ -72,6 +72,9 @@ export function GameApp() {
   const stealSeconds = state?.room.steal_seconds ?? 30;
   const stolenByMe = Boolean(state?.meId && state.room.steal_player_id === state.meId);
   const myTokens = state?.players.find((player) => player.id === state.meId)?.tokens ?? 0;
+  const mySpareCards = state
+    ? state.cards.filter((card) => card.player_id === state.meId && !card.is_seed).length
+    : 0;
   const stealShut = state
     ? stealBlock({
         playing: state.room.phase === "PLAYING",
@@ -80,10 +83,10 @@ export function GameApp() {
         stolenBy: state.room.steal_player_id,
         elapsedSeconds: listenedSeconds,
         waitSeconds: stealSeconds,
-        tokens: myTokens,
+        spareCards: mySpareCards,
       })
     : "NOT_PLAYING";
-  const stealRipe = stealShut === null || stealShut === "NO_STAKE";
+  const stealRipe = stealShut === null || stealShut === "NO_CARD";
   const offerSteal = stealRipe && passedOnTrack !== state?.room.current_track_id;
   const victimName =
     state?.players.find((player) => player.id === state.room.turn_player_id)?.name ?? "a pessoa";
@@ -321,7 +324,7 @@ export function GameApp() {
       ) : offerSteal ? (
         <StealModal
           victimName={victimName}
-          myTokens={myTokens}
+          spareCards={mySpareCards}
           busy={busy}
           onSteal={() =>
             run(async () => {
