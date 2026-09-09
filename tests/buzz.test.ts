@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { shouldBuzz } from "@/lib/game/buzz";
+import { alertKind, shouldBuzz } from "@/lib/game/buzz";
 
 describe("quando o celular deve vibrar", () => {
   it("fica quieto na primeira leitura, mesmo sendo minha vez", () => {
@@ -24,5 +24,15 @@ describe("quando o celular deve vibrar", () => {
 
   it("não vibra em recarregamento no meio da minha vez", () => {
     expect(shouldBuzz(null, true)).toBe(false);
+  });
+});
+
+describe("qual aviso usar em cada aparelho", () => {
+  it("vibra onde a Vibration API existe", () => {
+    expect(alertKind(true)).toBe("VIBRATE");
+  });
+
+  it("toca o som onde não existe, como no iPhone", () => {
+    expect(alertKind(false)).toBe("CHIME");
   });
 });

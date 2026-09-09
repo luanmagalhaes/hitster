@@ -1,3 +1,9 @@
+export type TurnAlert = "VIBRATE" | "CHIME";
+
+export function alertKind(canVibrate: boolean): TurnAlert {
+  return canVibrate ? "VIBRATE" : "CHIME";
+}
+
 export function shouldBuzz(previous: boolean | null, isMyTurn: boolean): boolean {
   if (previous === null) {
     return false;
