@@ -48,17 +48,18 @@ function Group({ title, hint, options, chosen, tone, canEdit, busy, onPick }: Gr
                   : "cursor-default"
               } ${!canEdit && !picked ? "opacity-45" : ""}`}
             >
-              <span className="block text-sm leading-none sm:text-base">{option.head}</span>
-              <span className="mt-1 block text-[0.62rem] font-semibold sm:text-[0.68rem]">
+              <span className="block text-base leading-none">{option.head}</span>
+              <span className="mt-1 block text-[0.6rem] font-semibold leading-tight sm:text-[0.68rem]">
                 {option.label}
-              </span>
-              <span className="mt-0.5 block text-[0.55rem] font-semibold leading-tight opacity-70 sm:text-[0.58rem]">
-                {option.hint}
               </span>
             </button>
           );
         })}
       </div>
+
+      <p className="mt-1.5 text-[0.7rem] font-semibold leading-snug text-ink/60">
+        {options.find((option) => option.key === chosen)?.hint}
+      </p>
     </div>
   );
 }

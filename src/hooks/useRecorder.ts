@@ -11,6 +11,7 @@ export interface Take {
 }
 
 const preferred = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg"];
+const voiceBitrate = 24000;
 
 function pickType(): string | undefined {
   if (typeof MediaRecorder === "undefined") {
@@ -78,7 +79,14 @@ export function useRecorder(maxSeconds: number) {
     let stream: MediaStream;
 
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
     } catch {
       setProblem("Preciso da permissão do microfone para gravar.");
 
@@ -90,12 +98,19 @@ export function useRecorder(maxSeconds: number) {
     let machine: MediaRecorder;
 
     try {
-      machine = new MediaRecorder(stream, type ? { mimeType: type } : undefined);
+      machine = new MediaRecorder(stream, {
+        ...(type ? { mimeType: type } : {}),
+        audioBitsPerSecond: voiceBitrate,
+      });
     } catch {
-      stream.getTracks().forEach((track) => track.stop());
-      setProblem("Não consegui iniciar a gravação neste aparelho.");
+      try {
+        machine = new MediaRecorder(stream, type ? { mimeType: type } : undefined);
+      } catch {
+        stream.getTracks().forEach((track) => track.stop());
+        setProblem("Não consegui iniciar a gravação neste aparelho.");
 
-      return;
+        return;
+      }
     }
 
     chunks.current = [];

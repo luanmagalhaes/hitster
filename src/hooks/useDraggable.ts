@@ -7,12 +7,15 @@ export interface Spot {
   y: number;
 }
 
+const edge = 8;
+const slop = 4;
+
 export function useDraggable(initial: Spot) {
   const [spot, setSpot] = useState<Spot>(initial);
-  const spotRef = useRef<Spot>(initial);
   const dragging = useRef(false);
   const moved = useRef(false);
-  const grab = useRef<Spot>({ x: 0, y: 0 });
+  const from = useRef<Spot>({ x: 0, y: 0 });
+  const base = useRef<Spot>(initial);
   const root = useRef<HTMLElement | null>(null);
   const size = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
 
@@ -27,14 +30,17 @@ export function useDraggable(initial: Spot) {
   }, []);
 
   const clamp = useCallback((next: Spot): Spot => {
+    const view = window.visualViewport;
+    const across = view?.width ?? window.innerWidth;
+    const down = view?.height ?? window.innerHeight;
     const width = size.current.width || 280;
     const height = size.current.height || 200;
-    const maxX = Math.max(8, window.innerWidth - width - 8);
-    const maxY = Math.max(8, window.innerHeight - height - 8);
+    const maxX = Math.max(edge, across - width - edge);
+    const maxY = Math.max(edge, down - height - edge);
 
     return {
-      x: Math.min(maxX, Math.max(8, next.x)),
-      y: Math.min(maxY, Math.max(8, next.y)),
+      x: Math.min(maxX, Math.max(edge, next.x)),
+      y: Math.min(maxY, Math.max(edge, next.y)),
     };
   }, []);
 
@@ -56,7 +62,8 @@ export function useDraggable(initial: Spot) {
       const rect = box.getBoundingClientRect();
 
       size.current = { width: rect.width, height: rect.height };
-      grab.current = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+      base.current = { x: rect.left, y: rect.top };
+      from.current = { x: event.clientX, y: event.clientY };
       dragging.current = true;
       moved.current = false;
       event.currentTarget.setPointerCapture(event.pointerId);
@@ -70,20 +77,17 @@ export function useDraggable(initial: Spot) {
         return;
       }
 
-      const next = { x: event.clientX - grab.current.x, y: event.clientY - grab.current.y };
+      const shiftX = event.clientX - from.current.x;
+      const shiftY = event.clientY - from.current.y;
 
-      if (Math.abs(next.x - spotRef.current.x) > 3 || Math.abs(next.y - spotRef.current.y) > 3) {
+      if (Math.abs(shiftX) > slop || Math.abs(shiftY) > slop) {
         moved.current = true;
       }
 
-      setSpot(clamp(next));
+      setSpot(clamp({ x: base.current.x + shiftX, y: base.current.y + shiftY }));
     },
     [clamp],
   );
-
-  useEffect(() => {
-    spotRef.current = spot;
-  }, [spot]);
 
   const onPointerUp = useCallback((event: React.PointerEvent<HTMLElement>) => {
     dragging.current = false;
@@ -96,9 +100,15 @@ export function useDraggable(initial: Spot) {
   }, [clamp, measure]);
 
   useEffect(() => {
-    window.addEventListener("resize", settle);
+    const view = window.visualViewport;
 
-    return () => window.removeEventListener("resize", settle);
+    window.addEventListener("resize", settle);
+    view?.addEventListener("resize", settle);
+
+    return () => {
+      window.removeEventListener("resize", settle);
+      view?.removeEventListener("resize", settle);
+    };
   }, [settle]);
 
   const attach = useCallback(
