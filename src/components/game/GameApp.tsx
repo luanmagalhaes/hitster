@@ -21,6 +21,7 @@ import { useNow } from "@/hooks/useNow";
 import { useTurnBuzz } from "@/hooks/useTurnBuzz";
 import { modeLabels, secondsUntilSteal, stealBlock, windowFor, type GameMode } from "@/lib/game/steal";
 import { api } from "@/lib/api";
+import { hostGraceSeconds } from "@/lib/game/limits";
 import { rememberStarter, starterSeen } from "@/lib/session";
 import {
   prefsSnapshot,
@@ -117,6 +118,12 @@ export function GameApp() {
   const turnStartedAt = state?.room.turn_started_at ?? null;
   const turnSeconds = state?.room.turn_seconds ?? 60;
   const playingPhase = state?.room.phase === "PLAYING";
+  const lobbyGraceLeft = state?.room.created_at
+    ? Math.max(
+        0,
+        Math.ceil(hostGraceSeconds - (now - new Date(state.room.created_at).getTime()) / 1000),
+      )
+    : hostGraceSeconds;
 
   const clockRef = useRef<RoomRow | null>(null);
 
@@ -371,6 +378,8 @@ export function GameApp() {
           room={state.room}
           players={state.players}
           isHost={me?.is_host ?? false}
+          canAnyoneStart={lobbyGraceLeft <= 0}
+          graceLeft={lobbyGraceLeft}
           busy={busy}
           error={error}
           onStart={() => run(() => api.start(session.code, session.accessToken))}

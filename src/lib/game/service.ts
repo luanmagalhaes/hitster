@@ -1,6 +1,7 @@
 import { tracksForDeck, trackById } from "@/data/tracks";
 import { answerMatches, findPreview } from "@/lib/deezer";
 import { difficultyPresets, pickSpreadSeeds, type Difficulty } from "@/lib/game/seeds";
+import { hostGraceSeconds } from "@/lib/game/limits";
 import { stealBlock, stealBlockMessage, windowFor, type GameMode } from "@/lib/game/steal";
 import {
   correctSlotIndex,
@@ -337,8 +338,15 @@ export async function startMatch(input: { code: string; token: string }) {
   const room = await loadRoom(input.code);
   const me = await loadPlayer(room, input.token);
 
-  if (!me.is_host) {
-    throw new ServiceError("Só o host pode começar a partida", 403);
+  const waitedFor = room.created_at
+    ? (Date.now() - new Date(room.created_at).getTime()) / 1000
+    : 0;
+
+  if (!me.is_host && waitedFor < hostGraceSeconds) {
+    throw new ServiceError(
+      `Quem abriu a sala começa a partida. Se demorar, em ${Math.ceil(hostGraceSeconds - waitedFor)}s qualquer um pode começar`,
+      403,
+    );
   }
 
   if (room.phase !== RoomPhase.Lobby) {

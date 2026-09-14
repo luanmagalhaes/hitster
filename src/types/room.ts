@@ -61,6 +61,7 @@ export interface RoomRow {
   turn_seconds: number;
   last_result: SharedResult | null;
   last_notice: RoomNotice | null;
+  created_at: string;
   steal_player_id: string | null;
   steal_started_at: string | null;
   steal_seconds: number;

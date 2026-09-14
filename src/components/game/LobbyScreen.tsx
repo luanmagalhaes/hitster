@@ -13,6 +13,8 @@ interface LobbyScreenProps {
   room: RoomRow;
   players: PlayerRow[];
   isHost: boolean;
+  canAnyoneStart: boolean;
+  graceLeft: number;
   busy: boolean;
   error: string | null;
   onStart: () => void;
@@ -35,6 +37,8 @@ export function LobbyScreen({
   room,
   players,
   isHost,
+  canAnyoneStart,
+  graceLeft,
   busy,
   error,
   onStart,
@@ -43,6 +47,7 @@ export function LobbyScreen({
   const [copied, setCopied] = useState(false);
   const [confirmingStart, setConfirmingStart] = useState(false);
   const enough = players.length >= 2;
+  const hostName = players.find((player) => player.is_host)?.name ?? null;
 
   const copyCode = async () => {
     try {
@@ -58,21 +63,29 @@ export function LobbyScreen({
     <Screen
       wide
       footer={
-        isHost ? (
-          <Button
-            variant="ink"
-            size="lg"
-            fullWidth
-            disabled={busy || !enough}
-            onClick={() => setConfirmingStart(true)}
-          >
-            {enough
-              ? "Começar a partida"
-              : `Falta ${2 - players.length} ${2 - players.length === 1 ? "jogador" : "jogadores"}`}
-          </Button>
+        isHost || canAnyoneStart ? (
+          <div className="flex flex-col gap-1.5">
+            <Button
+              variant="ink"
+              size="lg"
+              fullWidth
+              disabled={busy || !enough}
+              onClick={() => setConfirmingStart(true)}
+            >
+              {enough
+                ? "Começar a partida"
+                : `Falta ${2 - players.length} ${2 - players.length === 1 ? "jogador" : "jogadores"}`}
+            </Button>
+            {!isHost && canAnyoneStart ? (
+              <p className="text-center text-xs font-semibold text-ink/55">
+                {hostName ?? "Quem abriu"} demorou, então liberou para qualquer um começar.
+              </p>
+            ) : null}
+          </div>
         ) : (
           <p className="text-center text-sm font-semibold text-ink/60">
-            Esperando o host começar...
+            {hostName ? `${hostName} começa a partida` : "Esperando quem abriu a sala"} · em{" "}
+            {graceLeft}s libera para todos
           </p>
         )
       }
