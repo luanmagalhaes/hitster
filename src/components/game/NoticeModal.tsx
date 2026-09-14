@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { Dice } from "@/components/game/Dice";
 import { Vinyl } from "@/components/ui/Vinyl";
 import type { RoomNotice } from "@/types/room";
 
@@ -22,11 +21,7 @@ export function NoticeModal({ notice, onClose }: NoticeModalProps) {
     <div className="fixed inset-0 z-[55] flex items-end justify-center bg-ink/70 p-4 sm:items-center">
       <div className="animate-sleeve-slide w-full max-w-sm overflow-hidden rounded-[1.75rem] border-4 border-ink bg-paper shadow-[0_14px_0_var(--color-ink)]">
         <div className={`flex items-center gap-4 p-5 ${tones[notice.kind]}`}>
-          {notice.kind === "TIMEOUT" ? (
-            <Dice face={4} className="w-14 shrink-0" />
-          ) : (
-            <Vinyl className="w-14 shrink-0" />
-          )}
+          <Vinyl className="w-14 shrink-0" />
           <span className="display text-xl leading-tight">{notice.title}</span>
         </div>
 

@@ -46,6 +46,13 @@ export function useDraggable(initial: Spot) {
         return;
       }
 
+      const target = event.target as HTMLElement | null;
+      const control = target?.closest("button, input, textarea, select, a, audio");
+
+      if (control && control !== event.currentTarget) {
+        return;
+      }
+
       const rect = box.getBoundingClientRect();
 
       size.current = { width: rect.width, height: rect.height };
