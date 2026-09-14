@@ -53,7 +53,7 @@ export function TimelineBoard({
                 >
                   <span className="display text-3xl leading-none">{card.year}</span>
                   <span className="mt-1.5 text-[0.55rem] font-semibold uppercase tracking-[0.14em] opacity-75">
-                    saída
+                    Saída
                   </span>
                 </div>
               ) : (

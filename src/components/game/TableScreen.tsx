@@ -164,7 +164,7 @@ export function TableScreen({
             onClick={onRules}
             className="display cursor-pointer rounded-full border-2 border-ink bg-paper px-2.5 py-1 text-xs text-ink transition-colors hover:bg-sun-light"
           >
-            regras
+            Regras
           </button>
           <Wordmark size="sm" className="hidden opacity-45 sm:inline-block" />
         </div>
@@ -255,7 +255,7 @@ export function TableScreen({
                       aria-label={`Tirar ${player.name} da mesa`}
                       className="display shrink-0 cursor-pointer rounded-lg px-2 py-1 text-xs text-ink/35 transition-colors hover:bg-magenta hover:text-cream disabled:cursor-not-allowed"
                     >
-                      tirar
+                      Tirar
                     </button>
                   ) : null}
                 </div>

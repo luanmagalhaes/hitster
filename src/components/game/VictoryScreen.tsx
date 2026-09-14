@@ -36,7 +36,7 @@ export function VictoryScreen({ players, cards, winnerId, myId, onExit }: Victor
           onClick={() => setShowBurst(false)}
           className="display absolute bottom-8 left-1/2 -translate-x-1/2 cursor-pointer rounded-xl bg-ink/85 px-4 py-2 text-xs text-sun"
         >
-          ver o placar
+          Ver o placar
         </button>
       </div>
     );

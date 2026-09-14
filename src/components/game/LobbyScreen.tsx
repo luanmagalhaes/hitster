@@ -158,7 +158,7 @@ export function LobbyScreen({
                 <span className="display min-w-0 flex-1 truncate text-ink">{player.name}</span>
                 {player.is_host ? (
                   <span className="display rounded-full bg-magenta px-2.5 py-1 text-[0.6rem] text-cream">
-                    vitrola
+                    Vitrola
                   </span>
                 ) : null}
               </li>

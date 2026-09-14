@@ -120,7 +120,7 @@ export function HomeScreen({
                     </span>
                     {deck === option.key ? (
                       <span className="display shrink-0 rounded-full bg-ink px-2.5 py-1 text-[0.6rem] text-sun">
-                        escolhido
+                        Escolhido
                       </span>
                     ) : null}
                   </button>
