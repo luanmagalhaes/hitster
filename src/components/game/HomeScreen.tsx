@@ -5,23 +5,10 @@ import { Screen } from "@/components/ui/Screen";
 import { Vinyl } from "@/components/ui/Vinyl";
 import { Wordmark } from "@/components/ui/Wordmark";
 import { brand, copy } from "@/data/copy";
+import { deckOptions } from "@/data/roomOptions";
 import type { RecentSeat } from "@/lib/session";
-import type { DeckKind } from "@/types/track";
-
-const decks: Array<{ key: DeckKind; label: string; hint: string; tone: string }> = [
-  { key: "NATIONAL", label: copy.decks.national, hint: copy.decks.nationalHint, tone: "bg-aqua" },
-  {
-    key: "INTERNATIONAL",
-    label: copy.decks.international,
-    hint: copy.decks.internationalHint,
-    tone: "bg-magenta text-cream",
-  },
-  { key: "MIXED", label: copy.decks.mixed, hint: copy.decks.mixedHint, tone: "bg-ink text-sun" },
-];
 
 interface HomeScreenProps {
-  deck: DeckKind;
-  onDeck: (deck: DeckKind) => void;
   seats: RecentSeat[];
   onResume: (seat: RecentSeat) => void;
   onForget: (code: string) => void;
@@ -31,8 +18,6 @@ interface HomeScreenProps {
 }
 
 export function HomeScreen({
-  deck,
-  onDeck,
   seats,
   onResume,
   onForget,
@@ -93,23 +78,19 @@ export function HomeScreen({
             <h2 className="display mb-4 text-center text-xl text-ink/70 lg:text-left">
               {copy.decks.title}
             </h2>
+            <p className="mb-4 text-center text-xs font-semibold text-ink/50 lg:text-left">
+              Você escolhe o baralho dentro da sala, junto com o resto das regras.
+            </p>
 
             <ul className="flex flex-col gap-3">
-              {decks.map((option, index) => (
+              {deckOptions.map((option, index) => (
                 <li
                   key={option.key}
                   className="animate-sleeve-slide"
                   style={{ animationDelay: `${120 + index * 90}ms` }}
                 >
-                  <button
-                    type="button"
-                    onClick={() => onDeck(option.key)}
-                    aria-pressed={deck === option.key}
-                    className={`edge-card group flex w-full cursor-pointer items-center gap-4 rounded-3xl border-2 p-4 text-left transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[inset_0_2px_0_rgba(255,255,255,0.55),0_7px_0_var(--color-ink),0_20px_30px_-14px_rgba(16,16,20,0.6)] active:translate-y-[2px] ${option.tone} ${
-                      deck === option.key
-                        ? "border-ink ring-4 ring-ink/25"
-                        : "border-ink opacity-80 hover:opacity-100"
-                    }`}
+                  <div
+                    className={`edge-card group flex w-full items-center gap-4 rounded-3xl border-2 border-ink p-4 text-left ${option.tone}`}
                   >
                     <span className="w-14 shrink-0 transition-transform duration-300 group-hover:rotate-[18deg]">
                       <Vinyl className="w-14" />
@@ -118,12 +99,7 @@ export function HomeScreen({
                       <span className="display block text-lg">{option.label}</span>
                       <span className="block text-xs opacity-75">{option.hint}</span>
                     </span>
-                    {deck === option.key ? (
-                      <span className="display shrink-0 rounded-full bg-ink px-2.5 py-1 text-[0.6rem] text-sun">
-                        Escolhido
-                      </span>
-                    ) : null}
-                  </button>
+                  </div>
                 </li>
               ))}
             </ul>

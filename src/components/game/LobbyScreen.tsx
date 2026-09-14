@@ -4,9 +4,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { cards } from "@/utils/plural";
+import { RoomSetup } from "@/components/game/RoomSetup";
 import { Screen } from "@/components/ui/Screen";
 import { Wordmark } from "@/components/ui/Wordmark";
-import { copy } from "@/data/copy";
+import { deckLabels, levelLabels } from "@/data/roomOptions";
 import type { PlayerRow, RoomRow } from "@/types/room";
 
 interface LobbyScreenProps {
@@ -19,19 +20,8 @@ interface LobbyScreenProps {
   error: string | null;
   onStart: () => void;
   onLeave: () => void;
+  onSetup: (patch: { deck?: string; difficulty?: string; mode?: string }) => void;
 }
-
-const modeLabels: Record<string, string> = {
-  CLASSIC: "Clássico",
-  QUICK: "Rápido",
-  MARATHON: "Maratona",
-};
-
-const deckLabels: Record<string, string> = {
-  NATIONAL: copy.decks.national,
-  INTERNATIONAL: copy.decks.international,
-  MIXED: copy.decks.mixed,
-};
 
 export function LobbyScreen({
   room,
@@ -43,6 +33,7 @@ export function LobbyScreen({
   error,
   onStart,
   onLeave,
+  onSetup,
 }: LobbyScreenProps) {
   const [copied, setCopied] = useState(false);
   const [confirmingStart, setConfirmingStart] = useState(false);
@@ -136,21 +127,31 @@ export function LobbyScreen({
       </header>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <button
-          type="button"
-          onClick={copyCode}
-          className="edge-card cursor-pointer rounded-3xl border-2 border-ink bg-aqua p-6 text-center text-ink transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[inset_0_2px_0_rgba(255,255,255,0.55),0_7px_0_var(--color-ink),0_20px_30px_-14px_rgba(16,16,20,0.6)] active:translate-y-[2px]"
-        >
-          <span className="display block text-xs uppercase tracking-[0.2em] opacity-65">
-            Código da sala
-          </span>
-          <span className="display mt-1 block text-5xl tracking-[0.2em] sm:text-6xl">
-            {room.code}
-          </span>
-          <span className="mt-2 block text-xs font-semibold opacity-70">
-            {copied ? "Código copiado!" : "Toque para copiar"}
-          </span>
-        </button>
+        <div className="flex flex-col gap-5">
+          <button
+            type="button"
+            onClick={copyCode}
+            className="edge-card cursor-pointer rounded-3xl border-2 border-ink bg-aqua p-6 text-center text-ink transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[inset_0_2px_0_rgba(255,255,255,0.55),0_7px_0_var(--color-ink),0_20px_30px_-14px_rgba(16,16,20,0.6)] active:translate-y-[2px]"
+          >
+            <span className="display block text-xs uppercase tracking-[0.2em] opacity-65">
+              Código da sala
+            </span>
+            <span className="display mt-1 block text-5xl tracking-[0.2em] sm:text-6xl">
+              {room.code}
+            </span>
+            <span className="mt-2 block text-xs font-semibold opacity-70">
+              {copied ? "Código copiado!" : "Toque para copiar"}
+            </span>
+          </button>
+
+          <RoomSetup
+            room={room}
+            canEdit={isHost || canAnyoneStart}
+            busy={busy}
+            pending={error}
+            onChange={onSetup}
+          />
+        </div>
 
         <div>
           <div className="mb-3 flex items-baseline justify-between">
@@ -179,15 +180,10 @@ export function LobbyScreen({
           </ul>
 
           <p className="mt-4 rounded-2xl border-2 border-ink bg-sun-light p-3 text-xs font-semibold text-ink/70">
-            {modeLabels[room.difficulty] ?? room.difficulty} · baralho {deckLabels[room.deck] ?? room.deck} ·{" "}
-            {cards(room.seed_cards)} de saída · alvo {room.target_cards}
+            {levelLabels[room.difficulty] ?? room.difficulty} · baralho{" "}
+            {deckLabels[room.deck] ?? room.deck} · {cards(room.seed_cards)} de saída · alvo{" "}
+            {room.target_cards}
           </p>
-
-          {error ? (
-            <p className="mt-3 rounded-2xl border-2 border-ink bg-magenta-soft p-3 text-sm font-semibold text-ink">
-              {error}
-            </p>
-          ) : null}
         </div>
       </div>
     </Screen>

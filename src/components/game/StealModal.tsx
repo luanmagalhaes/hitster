@@ -7,11 +7,10 @@ import { cards } from "@/utils/plural";
 interface StealModalProps {
   victimName: string;
   spareCards: number;
-  busy: boolean;
   onDismiss: () => void;
 }
 
-export function StealModal({ victimName, spareCards, busy, onDismiss }: StealModalProps) {
+export function StealModal({ victimName, spareCards, onDismiss }: StealModalProps) {
   const broke = spareCards < stealPenaltyCards;
 
   return (

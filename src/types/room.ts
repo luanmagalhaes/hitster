@@ -99,3 +99,14 @@ export interface EventRow {
   detail: string | null;
   created_at: string;
 }
+
+export interface ChatMessage {
+  id: string;
+  player_id: string | null;
+  author_name: string;
+  kind: "TEXT" | "AUDIO";
+  body: string | null;
+  audio_path: string | null;
+  audio_seconds: number | null;
+  created_at: string;
+}

@@ -1,4 +1,4 @@
-import type { EventRow, PlayerRow, RoomRow, TimelineCardRow } from "@/types/room";
+import type { ChatMessage, EventRow, PlayerRow, RoomRow, TimelineCardRow } from "@/types/room";
 import type { DeckKind } from "@/types/track";
 import { messageForStatus, networkMessage, unreadableMessage } from "@/lib/messages";
 
@@ -89,6 +89,42 @@ export const api = {
       token,
     ),
 
+  chat: (code: string, token: string) =>
+    request<{ messages: ChatMessage[] }>(`/api/rooms/${code}/chat`, { method: "GET" }, token),
+
+  sendText: (code: string, token: string, body: string) =>
+    request<ChatMessage>(
+      `/api/rooms/${code}/chat`,
+      { method: "POST", body: JSON.stringify({ body }) },
+      token,
+    ),
+
+  sendAudio: async (code: string, token: string, blob: Blob, seconds: number) => {
+    const response = await fetch(`/api/rooms/${code}/chat`, {
+      method: "POST",
+      body: blob,
+      headers: {
+        "Content-Type": blob.type,
+        "x-player-token": token,
+        "x-audio-seconds": String(Math.round(seconds)),
+      },
+    }).catch(() => null);
+
+    if (!response) {
+      throw new ApiError("Não consegui enviar o áudio. Veja sua conexão.");
+    }
+
+    const payload = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      throw new ApiError(
+        (payload as { error?: string } | null)?.error ?? messageForStatus(response.status),
+      );
+    }
+
+    return payload as ChatMessage;
+  },
+
   timeout: (code: string) =>
     request<{ skipped: boolean; from?: string; to?: string }>(`/api/rooms/${code}/timeout`, {
       method: "POST",
@@ -124,6 +160,17 @@ export const api = {
   state: (code: string, token?: string) =>
     request<RoomState>(`/api/rooms/${code}`, { method: "GET" }, token),
 
+  setup: (
+    code: string,
+    token: string,
+    patch: { deck?: string; difficulty?: string; mode?: string },
+  ) =>
+    request<unknown>(
+      `/api/rooms/${code}/setup`,
+      { method: "POST", body: JSON.stringify(patch) },
+      token,
+    ),
+
   start: (code: string, token: string) =>
     request<{ started: boolean }>(`/api/rooms/${code}/start`, { method: "POST" }, token),
 
@@ -135,10 +182,11 @@ export const api = {
     ),
 
   nowPlaying: (code: string) =>
-    request<{ trackId: string | null; previewUrl: string | null; confident?: boolean }>(
-      `/api/rooms/${code}/play`,
-      { method: "GET" },
-    ),
+    request<{
+      trackId: string | null;
+      previewUrl: string | null;
+      confident?: boolean;
+    }>(`/api/rooms/${code}/play`, { method: "GET" }),
 
   skip: (code: string, token: string) =>
     request<{ skipped: boolean }>(`/api/rooms/${code}/skip`, { method: "POST" }, token),

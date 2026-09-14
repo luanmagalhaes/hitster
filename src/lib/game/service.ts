@@ -2,6 +2,7 @@ import { tracksForDeck, trackById } from "@/data/tracks";
 import { answerMatches, findPreview } from "@/lib/deezer";
 import { difficultyPresets, pickSpreadSeeds, type Difficulty } from "@/lib/game/seeds";
 import { hostGraceSeconds } from "@/lib/game/limits";
+import { wipeChat } from "@/lib/game/chat";
 import { stealBlock, stealBlockMessage, windowFor, type GameMode } from "@/lib/game/steal";
 import {
   correctSlotIndex,
@@ -12,7 +13,7 @@ import {
 } from "@/lib/game/timeline";
 import { serverClient } from "@/lib/supabase/server";
 import { shuffle } from "@/utils/shuffle";
-import type { DeckKind } from "@/types/track";
+import { DeckKind } from "@/types/track";
 import { RoomPhase, type PlayerRow, type RoomRow } from "@/types/room";
 
 export class ServiceError extends Error {
@@ -76,7 +77,9 @@ async function record(input: {
   detail?: string | null;
 }) {
   const client = serverClient();
-  const { data: sequence } = await client.rpc("vt_next_sequence", { p_room: input.roomId });
+  const { data: sequence } = await client.rpc("vt_next_sequence", {
+    p_room: input.roomId,
+  });
 
   await client.from("vt_events").insert({
     room_id: input.roomId,
@@ -156,7 +159,10 @@ async function detachPlayer(input: {
 
   const wasTheirTurn = room.turn_player_id === target.id;
   const wasHost = (roster ?? []).find((player) => player.id === target.id)?.is_host ?? false;
-  const following = nextSeat(target.seat, others.map((player) => player.seat as number));
+  const following = nextSeat(
+    target.seat,
+    others.map((player) => player.seat as number),
+  );
   const nextPlayer = others.find((player) => player.seat === following) ?? others[0];
 
   await client.from("vt_players").delete().eq("id", target.id);
@@ -202,6 +208,8 @@ async function detachPlayer(input: {
       .eq("id", room.id)
       .is("winner_player_id", null);
 
+    await wipeChat(room.id);
+
     await record({
       roomId: room.id,
       type: "MATCH_WON",
@@ -210,7 +218,13 @@ async function detachPlayer(input: {
     });
   }
 
-  return { returned, wasTheirTurn, newHostName, nextName: nextPlayer.id, finished };
+  return {
+    returned,
+    wasTheirTurn,
+    newHostName,
+    nextName: nextPlayer.id,
+    finished,
+  };
 }
 
 async function seatFor(roomId: string) {
@@ -269,12 +283,13 @@ export async function createRoom(input: {
     throw new ServiceError(roomError.message, 500);
   }
 
-  const joined = await joinRoom({ code: room.code as string, name: input.hostName, isHost: true });
+  const joined = await joinRoom({
+    code: room.code as string,
+    name: input.hostName,
+    isHost: true,
+  });
 
-  await client
-    .from("vt_rooms")
-    .update({ host_player_id: joined.playerId })
-    .eq("id", room.id);
+  await client.from("vt_rooms").update({ host_player_id: joined.playerId }).eq("id", room.id);
 
   return joined;
 }
@@ -319,11 +334,18 @@ export async function joinRoom(input: { code: string; name: string; isHost?: boo
 
   const accessToken = createToken();
 
-  await client
-    .from("vt_player_secrets")
-    .insert({ player_id: player.id, room_id: room.id, access_token: accessToken });
+  await client.from("vt_player_secrets").insert({
+    player_id: player.id,
+    room_id: room.id,
+    access_token: accessToken,
+  });
 
-  await record({ roomId: room.id, type: "PLAYER_JOINED", actorId: player.id, detail: name });
+  await record({
+    roomId: room.id,
+    type: "PLAYER_JOINED",
+    actorId: player.id,
+    detail: name,
+  });
 
   return {
     code: room.code,
@@ -333,14 +355,84 @@ export async function joinRoom(input: { code: string; name: string; isHost?: boo
   };
 }
 
+export async function updateSetup(input: {
+  code: string;
+  token: string;
+  deck?: string;
+  difficulty?: string;
+  mode?: string;
+}) {
+  const client = serverClient();
+  const room = await loadRoom(input.code);
+  const me = await loadPlayer(room, input.token);
+
+  if (room.phase !== RoomPhase.Lobby) {
+    throw new ServiceError("A partida já começou, não dá mais para mudar", 409);
+  }
+
+  const waitedFor = room.created_at ? (Date.now() - new Date(room.created_at).getTime()) / 1000 : 0;
+
+  if (!me.is_host && waitedFor < hostGraceSeconds) {
+    throw new ServiceError(
+      `Quem abriu a sala escolhe as regras. Se demorar, em ${Math.ceil(hostGraceSeconds - waitedFor)}s qualquer um pode mexer`,
+      403,
+    );
+  }
+
+  const patch: Record<string, unknown> = {};
+
+  if (input.deck !== undefined) {
+    if (!Object.values(DeckKind).includes(input.deck as DeckKind)) {
+      throw new ServiceError("Esse baralho não existe", 422);
+    }
+
+    patch.deck = input.deck;
+  }
+
+  if (input.difficulty !== undefined) {
+    const preset = difficultyPresets[input.difficulty as Difficulty];
+
+    if (!preset) {
+      throw new ServiceError("Esse modo de jogo não existe", 422);
+    }
+
+    patch.difficulty = input.difficulty;
+    patch.seed_cards = preset.seedCards;
+    patch.target_cards = preset.targetCards;
+    patch.token_cost = preset.tokenCost;
+  }
+
+  if (input.mode !== undefined) {
+    if (input.mode !== "CLASSIC" && input.mode !== "LIGHTNING") {
+      throw new ServiceError("Esse ritmo de roubo não existe", 422);
+    }
+
+    patch.mode = input.mode;
+  }
+
+  if (Object.keys(patch).length === 0) {
+    throw new ServiceError("Nada para mudar", 422);
+  }
+
+  const { error } = await client
+    .from("vt_rooms")
+    .update(patch)
+    .eq("id", room.id)
+    .eq("phase", RoomPhase.Lobby);
+
+  if (error) {
+    throw new ServiceError(error.message, 500);
+  }
+
+  return roomState({ code: input.code, token: input.token });
+}
+
 export async function startMatch(input: { code: string; token: string }) {
   const client = serverClient();
   const room = await loadRoom(input.code);
   const me = await loadPlayer(room, input.token);
 
-  const waitedFor = room.created_at
-    ? (Date.now() - new Date(room.created_at).getTime()) / 1000
-    : 0;
+  const waitedFor = room.created_at ? (Date.now() - new Date(room.created_at).getTime()) / 1000 : 0;
 
   if (!me.is_host && waitedFor < hostGraceSeconds) {
     throw new ServiceError(
@@ -471,11 +563,7 @@ export async function drawTrack(input: { code: string; token: string }) {
 
   const trackId = top.track_id as string;
 
-  await client
-    .from("vt_draw_pile")
-    .delete()
-    .eq("room_id", room.id)
-    .eq("track_id", trackId);
+  await client.from("vt_draw_pile").delete().eq("room_id", room.id).eq("track_id", trackId);
 
   await client
     .from("vt_rooms")
@@ -514,6 +602,8 @@ async function finishByPileOut(roomId: string): Promise<never> {
       })
       .eq("id", roomId)
       .is("winner_player_id", null);
+
+    await wipeChat(roomId);
 
     await record({
       roomId,
@@ -672,9 +762,7 @@ export async function submitGuess(input: {
     correct
       ? `pôs ${labelForSlot(years, input.slotIndex)} e acertou`
       : `pôs ${labelForSlot(years, input.slotIndex)}, mas ${track.year} fica ${labelForSlot(years, rightSlot)}`,
-    earnedTokens > 0
-      ? `+${earnedTokens} ${earnedTokens === 1 ? "ficha" : "fichas"}`
-      : null,
+    earnedTokens > 0 ? `+${earnedTokens} ${earnedTokens === 1 ? "ficha" : "fichas"}` : null,
     lostCard ? `roubo falhou: perdeu ${lostCard.artist} de ${lostCard.year}` : null,
     stealing && correct ? `roubou de ${victim?.name ?? "alguém"}` : null,
   ]
@@ -743,7 +831,12 @@ export async function submitGuess(input: {
       })
       .eq("id", room.id);
 
-    await record({ roomId: room.id, type: "MATCH_WON", actorId: winner.id as string });
+    await record({
+      roomId: room.id,
+      type: "MATCH_WON",
+      actorId: winner.id as string,
+    });
+    await wipeChat(room.id);
   } else {
     await client
       .from("vt_rooms")
@@ -983,7 +1076,8 @@ export async function spendTokens(input: { code: string; token: string }) {
   }
 
   if (me.tokens < room.token_cost) {
-    throw new ServiceError(`Você precisa de ${room.token_cost} fichas e tem ${me.tokens === 1 ? "1 ficha" : `${me.tokens} fichas`}`,
+    throw new ServiceError(
+      `Você precisa de ${room.token_cost} fichas e tem ${me.tokens === 1 ? "1 ficha" : `${me.tokens} fichas`}`,
       409,
     );
   }
@@ -1006,11 +1100,7 @@ export async function spendTokens(input: { code: string; token: string }) {
     throw new ServiceError("Faixa desconhecida", 500);
   }
 
-  await client
-    .from("vt_draw_pile")
-    .delete()
-    .eq("room_id", room.id)
-    .eq("track_id", track.id);
+  await client.from("vt_draw_pile").delete().eq("room_id", room.id).eq("track_id", track.id);
 
   await client.from("vt_timeline_cards").insert({
     room_id: room.id,
@@ -1051,10 +1141,14 @@ export async function spendTokens(input: { code: string; token: string }) {
       })
       .eq("id", room.id);
 
+    await wipeChat(room.id);
+
     await record({ roomId: room.id, type: "MATCH_WON", actorId: me.id });
   }
 
-  return { track: { artist: track.artist, title: track.title, year: track.year } };
+  return {
+    track: { artist: track.artist, title: track.title, year: track.year },
+  };
 }
 
 export async function removePlayer(input: { code: string; token: string; playerId: string }) {
@@ -1082,7 +1176,11 @@ export async function removePlayer(input: { code: string; token: string; playerI
 
   const outcome = await detachPlayer({
     room,
-    target: { id: target.id as string, name: target.name as string, seat: target.seat as number },
+    target: {
+      id: target.id as string,
+      name: target.name as string,
+      seat: target.seat as number,
+    },
   });
 
   await record({
@@ -1097,9 +1195,7 @@ export async function removePlayer(input: { code: string; token: string; playerI
     kind: "REMOVED",
     title: `${target.name} saiu da mesa`,
     text: `${me.name} tirou ${target.name} da partida. ${
-      outcome.returned === 1
-        ? "1 carta voltou"
-        : `${outcome.returned} cartas voltaram`
+      outcome.returned === 1 ? "1 carta voltou" : `${outcome.returned} cartas voltaram`
     } para o monte${outcome.wasTheirTurn ? " e a vez passou para o próximo" : ""}.`,
   });
 
@@ -1249,4 +1345,11 @@ export async function skipIdleTurn(input: { code: string }) {
     from: current.name as string,
     to: nextPlayer.name as string,
   };
+}
+
+export async function loadRoomForChat(code: string, token: string) {
+  const room = await loadRoom(code);
+  const player = await loadPlayer(room, token);
+
+  return { room, player };
 }

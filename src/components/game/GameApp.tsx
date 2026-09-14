@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AudioDeck } from "@/components/game/AudioDeck";
+import { ChatBubble } from "@/components/game/ChatBubble";
 import { HomeScreen } from "@/components/game/HomeScreen";
 import { HowToPlay } from "@/components/game/HowToPlay";
 import { NoticeModal } from "@/components/game/NoticeModal";
@@ -19,7 +20,12 @@ import { useRoom } from "@/hooks/useRoom";
 import { useSession } from "@/hooks/useSession";
 import { useNow } from "@/hooks/useNow";
 import { useTurnBuzz } from "@/hooks/useTurnBuzz";
-import { modeLabels, secondsUntilSteal, stealBlock, windowFor, type GameMode } from "@/lib/game/steal";
+import {
+  modeLabels,
+  secondsUntilSteal,
+  stealBlock,
+  windowFor,
+} from "@/lib/game/steal";
 import { api } from "@/lib/api";
 import { hostGraceSeconds } from "@/lib/game/limits";
 import { rememberStarter, starterSeen } from "@/lib/session";
@@ -30,7 +36,6 @@ import {
   subscribePrefs,
 } from "@/lib/prefs";
 import type { RoomRow } from "@/types/room";
-import type { DeckKind } from "@/types/track";
 
 type View = "HOME" | "CREATE" | "JOIN";
 
@@ -39,9 +44,6 @@ const previewAttempts = 4;
 export function GameApp() {
   const { session, save, clear, seats, seatFor, forget } = useSession();
   const [view, setView] = useState<View>("HOME");
-  const [deck, setDeck] = useState<DeckKind>("MIXED");
-  const [difficulty, setDifficulty] = useState("CLASSIC");
-  const [mode, setMode] = useState<GameMode>("CLASSIC");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [seenResultId, setSeenResultId] = useState<string | null>(null);
@@ -74,8 +76,7 @@ export function GameApp() {
     starterId !== seenStarter &&
     state?.room.phase === "PLAYING" &&
     !state?.room.current_track_id;
-  const starterName =
-    state?.players.find((player) => player.id === starterId)?.name ?? "alguém";
+  const starterName = state?.players.find((player) => player.id === starterId)?.name ?? "alguém";
 
   const myTurn = Boolean(state?.meId && state.room.turn_player_id === state.meId);
 
@@ -84,11 +85,8 @@ export function GameApp() {
   const now = useNow(1000);
   const trackStartedAt = state?.room.current_started_at ?? null;
   const listenedSeconds = trackStartedAt ? (now - new Date(trackStartedAt).getTime()) / 1000 : 0;
-  const stealSeconds = state
-    ? windowFor(state.room.mode, state.room.steal_count)
-    : 30;
+  const stealSeconds = state ? windowFor(state.room.mode, state.room.steal_count) : 30;
   const stolenByMe = Boolean(state?.meId && state.room.steal_player_id === state.meId);
-  const myTokens = state?.players.find((player) => player.id === state.meId)?.tokens ?? 0;
   const mySpareCards = state
     ? state.cards.filter((card) => card.player_id === state.meId && !card.is_seed).length
     : 0;
@@ -211,7 +209,10 @@ export function GameApp() {
         }
 
         if (data.trackId && data.previewUrl) {
-          setPreviews((current) => ({ ...current, [data.trackId as string]: data.previewUrl }));
+          setPreviews((current) => ({
+            ...current,
+            [data.trackId as string]: data.previewUrl,
+          }));
 
           return;
         }
@@ -283,42 +284,37 @@ export function GameApp() {
         <>
           {rulesGate}
           <JoinScreen
-          mode={view === "CREATE" ? "CREATE" : "JOIN"}
-          deck={deck}
-          difficulty={difficulty}
-          onDifficulty={setDifficulty}
-          gameMode={mode}
-          onMode={setMode}
-          busy={busy}
-          error={error}
-          onBack={() => setView("HOME")}
-          onSubmit={(input) =>
-            run(async () => {
-              if (view === "JOIN") {
-                const known = seatFor(input.code, input.name);
+            mode={view === "CREATE" ? "CREATE" : "JOIN"}
+            busy={busy}
+            error={error}
+            onBack={() => setView("HOME")}
+            onSubmit={(input) =>
+              run(async () => {
+                if (view === "JOIN") {
+                  const known = seatFor(input.code, input.name);
 
-                if (known) {
-                  save({
-                    code: known.code,
-                    playerId: known.playerId,
-                    accessToken: known.accessToken,
-                    name: known.name,
-                  });
-                  setView("HOME");
+                  if (known) {
+                    save({
+                      code: known.code,
+                      playerId: known.playerId,
+                      accessToken: known.accessToken,
+                      name: known.name,
+                    });
+                    setView("HOME");
 
-                  return;
+                    return;
+                  }
                 }
-              }
 
-              const result =
-                view === "CREATE"
-                  ? await api.createRoom(input.name, deck, difficulty, mode)
-                  : await api.joinRoom(input.code, input.name);
+                const result =
+                  view === "CREATE"
+                    ? await api.createRoom(input.name, "MIXED", "CLASSIC", "CLASSIC")
+                    : await api.joinRoom(input.code, input.name);
 
-              save(result);
-              setView("HOME");
-            })
-          }
+                save(result);
+                setView("HOME");
+              })
+            }
           />
         </>
       );
@@ -328,8 +324,6 @@ export function GameApp() {
       <>
         {rulesGate}
         <HomeScreen
-          deck={deck}
-          onDeck={setDeck}
           seats={seats}
           onResume={(seat) =>
             save({
@@ -374,6 +368,7 @@ export function GameApp() {
     return (
       <>
         {rulesGate}
+        <ChatBubble code={session.code} token={session.accessToken} myId={state.meId} />
         <LobbyScreen
           room={state.room}
           players={state.players}
@@ -384,6 +379,12 @@ export function GameApp() {
           error={error}
           onStart={() => run(() => api.start(session.code, session.accessToken))}
           onLeave={leave}
+          onSetup={(patch) =>
+            run(async () => {
+              await api.setup(session.code, session.accessToken, patch);
+              await refresh();
+            })
+          }
         />
       </>
     );
@@ -404,7 +405,6 @@ export function GameApp() {
           <StealModal
             victimName={victimName}
             spareCards={mySpareCards}
-            busy={busy}
             onDismiss={() => setPassedOnTrack(state.room.current_track_id)}
           />
           {stealShut === null ? (
@@ -445,47 +445,50 @@ export function GameApp() {
         <NoticeModal notice={visibleNotice} onClose={() => setSeenNoticeId(visibleNotice.id)} />
       ) : null}
 
+      <ChatBubble code={session.code} token={session.accessToken} myId={state.meId} />
+
       <TableScreen
-      room={state.room}
-      players={state.players}
-      cards={state.cards}
-      events={state.events}
-      remaining={state.remaining}
-      myId={state.meId}
-      busy={busy}
-      error={error}
-      turnStartedAt={turnStartedAt}
-      turnSeconds={turnSeconds}
-      stolenByMe={stolenByMe}
-      stealCountdown={secondsUntilSteal(listenedSeconds, stealSeconds)}
-      modeLabel={modeLabels[state.room.mode]}
-      stealWindow={stealSeconds}
-      thiefName={
-        state.room.steal_player_id
-          ? (state.players.find((player) => player.id === state.room.steal_player_id)?.name ?? null)
-          : null
-      }
-      audio={
-        <AudioDeck
-          previewUrl={currentTrackId ? (previews[currentTrackId] ?? null) : null}
-          hasTrack={Boolean(currentTrackId)}
-          searching={currentTrackId !== null && !(currentTrackId in previews)}
-          onSkip={() => run(() => api.skip(session.code, session.accessToken))}
-        />
-      }
-      onPlay={() => run(() => api.play(session.code, session.accessToken))}
-      isHost={me?.is_host ?? false}
-      onRemovePlayer={(playerId) =>
-        run(() => api.removePlayer(session.code, session.accessToken, playerId))
-      }
-      onSpendTokens={() => run(() => api.spendTokens(session.code, session.accessToken))}
-      onGuess={(input) =>
-        run(async () => {
-          await api.guess(session.code, session.accessToken, input);
-        })
-      }
+        room={state.room}
+        players={state.players}
+        cards={state.cards}
+        events={state.events}
+        remaining={state.remaining}
+        myId={state.meId}
+        busy={busy}
+        error={error}
+        turnStartedAt={turnStartedAt}
+        turnSeconds={turnSeconds}
+        stolenByMe={stolenByMe}
+        stealCountdown={secondsUntilSteal(listenedSeconds, stealSeconds)}
+        modeLabel={modeLabels[state.room.mode]}
+        stealWindow={stealSeconds}
+        thiefName={
+          state.room.steal_player_id
+            ? (state.players.find((player) => player.id === state.room.steal_player_id)?.name ??
+              null)
+            : null
+        }
+        audio={
+          <AudioDeck
+            previewUrl={currentTrackId ? (previews[currentTrackId] ?? null) : null}
+            hasTrack={Boolean(currentTrackId)}
+            searching={currentTrackId !== null && !(currentTrackId in previews)}
+            onSkip={() => run(() => api.skip(session.code, session.accessToken))}
+          />
+        }
+        onPlay={() => run(() => api.play(session.code, session.accessToken))}
+        isHost={me?.is_host ?? false}
+        onRemovePlayer={(playerId) =>
+          run(() => api.removePlayer(session.code, session.accessToken, playerId))
+        }
+        onSpendTokens={() => run(() => api.spendTokens(session.code, session.accessToken))}
+        onGuess={(input) =>
+          run(async () => {
+            await api.guess(session.code, session.accessToken, input);
+          })
+        }
         onLeave={() => setConfirmingLeave(true)}
-      onRules={() => setAskedRules(true)}
+        onRules={() => setAskedRules(true)}
       />
 
       {confirmingLeave ? (
