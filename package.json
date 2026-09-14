@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "icons": "node scripts/icons/generate.mjs"
+    "icons": "node scripts/icons/generate.mjs",
+    "emojis": "node scripts/build-emojis.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.4",
@@ -22,6 +23,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "emojibase-data": "^17.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.3.3",
     "sharp": "^0.35.4",

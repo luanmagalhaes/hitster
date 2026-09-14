@@ -9,9 +9,22 @@ export interface Spot {
 
 export function useDraggable(initial: Spot) {
   const [spot, setSpot] = useState<Spot>(initial);
+  const spotRef = useRef<Spot>(initial);
   const dragging = useRef(false);
+  const moved = useRef(false);
   const grab = useRef<Spot>({ x: 0, y: 0 });
+  const root = useRef<HTMLElement | null>(null);
   const size = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
+
+  const measure = useCallback(() => {
+    if (!root.current) {
+      return;
+    }
+
+    const rect = root.current.getBoundingClientRect();
+
+    size.current = { width: rect.width, height: rect.height };
+  }, []);
 
   const clamp = useCallback((next: Spot): Spot => {
     const width = size.current.width || 280;
@@ -38,6 +51,7 @@ export function useDraggable(initial: Spot) {
       size.current = { width: rect.width, height: rect.height };
       grab.current = { x: event.clientX - rect.left, y: event.clientY - rect.top };
       dragging.current = true;
+      moved.current = false;
       event.currentTarget.setPointerCapture(event.pointerId);
     },
     [],
@@ -49,23 +63,53 @@ export function useDraggable(initial: Spot) {
         return;
       }
 
-      setSpot(clamp({ x: event.clientX - grab.current.x, y: event.clientY - grab.current.y }));
+      const next = { x: event.clientX - grab.current.x, y: event.clientY - grab.current.y };
+
+      if (Math.abs(next.x - spotRef.current.x) > 3 || Math.abs(next.y - spotRef.current.y) > 3) {
+        moved.current = true;
+      }
+
+      setSpot(clamp(next));
     },
     [clamp],
   );
+
+  useEffect(() => {
+    spotRef.current = spot;
+  }, [spot]);
 
   const onPointerUp = useCallback((event: React.PointerEvent<HTMLElement>) => {
     dragging.current = false;
     event.currentTarget.releasePointerCapture(event.pointerId);
   }, []);
 
-  useEffect(() => {
-    const settle = () => setSpot((current) => clamp(current));
+  const settle = useCallback(() => {
+    measure();
+    setSpot((current) => clamp(current));
+  }, [clamp, measure]);
 
+  useEffect(() => {
     window.addEventListener("resize", settle);
 
     return () => window.removeEventListener("resize", settle);
-  }, [clamp]);
+  }, [settle]);
 
-  return { spot, handles: { onPointerDown, onPointerMove, onPointerUp } };
+  const attach = useCallback(
+    (node: HTMLElement | null) => {
+      root.current = node;
+
+      if (node) {
+        measure();
+      }
+    },
+    [measure],
+  );
+
+  return {
+    spot,
+    attach,
+    settle,
+    justDragged: () => moved.current,
+    handles: { onPointerDown, onPointerMove, onPointerUp },
+  };
 }

@@ -231,7 +231,7 @@ export function TableScreen({
                     <span className="display block truncate text-ink">
                       {player.name}
                       {player.id === myId ? " (você)" : ""}
-                      {isTurn ? " · jogando" : ""}
+                      {isTurn ? " · Jogando" : ""}
                     </span>
                     <span className="mt-1 flex items-center gap-2">
                       <span className="h-2 flex-1 overflow-hidden rounded-full bg-ink/12">

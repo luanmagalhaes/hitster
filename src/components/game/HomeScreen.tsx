@@ -2,10 +2,8 @@
 
 import { Button } from "@/components/ui/Button";
 import { Screen } from "@/components/ui/Screen";
-import { Vinyl } from "@/components/ui/Vinyl";
 import { Wordmark } from "@/components/ui/Wordmark";
 import { brand, copy } from "@/data/copy";
-import { deckOptions } from "@/data/roomOptions";
 import type { RecentSeat } from "@/lib/session";
 
 interface HomeScreenProps {
@@ -28,15 +26,15 @@ export function HomeScreen({
   const lastSeat = seats[0];
 
   return (
-    <Screen wide>
-      <div className="flex flex-1 flex-col justify-center gap-10 py-6 lg:flex-row lg:items-center lg:gap-16">
-        <header className="animate-sleeve-slide text-center lg:flex-1 lg:text-left">
+    <Screen>
+      <div className="flex flex-1 flex-col justify-center py-6">
+        <header className="animate-sleeve-slide mx-auto max-w-md text-center">
           <Wordmark size="xl" />
-          <p className="mx-auto mt-5 max-w-sm text-base leading-relaxed text-ink/70 lg:mx-0 lg:text-lg">
+          <p className="mx-auto mt-5 max-w-sm text-base leading-relaxed text-ink/70">
             {brand.tagline}
           </p>
 
-          <div className="mt-8 flex flex-col gap-3 sm:mx-auto sm:max-w-sm lg:mx-0">
+          <div className="mt-8 flex flex-col gap-3">
             {lastSeat ? (
               <div className="animate-sleeve-slide mb-1 rounded-2xl border-2 border-ink bg-aqua p-3.5 text-left">
                 <p className="text-xs font-semibold text-ink/75">
@@ -72,39 +70,6 @@ export function HomeScreen({
             {copy.home.footNote}
           </p>
         </header>
-
-        <section className="lg:flex-1">
-          <div className="mx-auto w-full max-w-sm">
-            <h2 className="display mb-4 text-center text-xl text-ink/70 lg:text-left">
-              {copy.decks.title}
-            </h2>
-            <p className="mb-4 text-center text-xs font-semibold text-ink/50 lg:text-left">
-              Você escolhe o baralho dentro da sala, junto com o resto das regras.
-            </p>
-
-            <ul className="flex flex-col gap-3">
-              {deckOptions.map((option, index) => (
-                <li
-                  key={option.key}
-                  className="animate-sleeve-slide"
-                  style={{ animationDelay: `${120 + index * 90}ms` }}
-                >
-                  <div
-                    className={`edge-card group flex w-full items-center gap-4 rounded-3xl border-2 border-ink p-4 text-left ${option.tone}`}
-                  >
-                    <span className="w-14 shrink-0 transition-transform duration-300 group-hover:rotate-[18deg]">
-                      <Vinyl className="w-14" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="display block text-lg">{option.label}</span>
-                      <span className="block text-xs opacity-75">{option.hint}</span>
-                    </span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
       </div>
     </Screen>
   );

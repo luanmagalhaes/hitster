@@ -13,6 +13,7 @@ import {
 } from "@/lib/game/timeline";
 import { serverClient } from "@/lib/supabase/server";
 import { shuffle } from "@/utils/shuffle";
+import { capitalize } from "@/utils/text";
 import { DeckKind } from "@/types/track";
 import { RoomPhase, type PlayerRow, type RoomRow } from "@/types/room";
 
@@ -767,6 +768,7 @@ export async function submitGuess(input: {
     stealing && correct ? `roubou de ${victim?.name ?? "alguém"}` : null,
   ]
     .filter(Boolean)
+    .map((part, index) => (index === 0 ? part : capitalize(part as string)))
     .join(" · ");
 
   await record({

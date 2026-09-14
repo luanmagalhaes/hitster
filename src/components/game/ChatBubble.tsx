@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { EmojiPicker } from "@/components/game/EmojiPicker";
 import { useDraggable } from "@/hooks/useDraggable";
 import { useRecorder } from "@/hooks/useRecorder";
 import { api } from "@/lib/api";
@@ -12,8 +13,6 @@ interface ChatBubbleProps {
   token: string;
   myId: string | null;
 }
-
-const quickEmojis = ["😂", "😭", "🔥", "🎶", "👏", "😱", "🤡", "💀", "❤️", "🫠", "🥁", "🏆"];
 
 function clockFor(stamp: string): string {
   const when = new Date(stamp);
@@ -31,8 +30,10 @@ export function ChatBubble({ code, token, myId }: ChatBubbleProps) {
   const [seenCount, setSeenCount] = useState(0);
 
   const feed = useRef<HTMLDivElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
+  const field = useRef<HTMLInputElement>(null);
   const recorder = useRecorder(maxAudioSeconds);
-  const { spot, handles } = useDraggable({ x: 16, y: 120 });
+  const { spot, attach, settle, justDragged, handles } = useDraggable({ x: 16, y: 120 });
 
   const load = useCallback(async () => {
     try {
@@ -86,7 +87,7 @@ export function ChatBubble({ code, token, myId }: ChatBubbleProps) {
 
       setMessages((current) => [...current, saved]);
       setDraft("");
-      setShowEmojis(false);
+      field.current?.focus();
     } catch (cause) {
       setProblem(cause instanceof Error ? cause.message : "Não consegui enviar.");
     } finally {
@@ -106,6 +107,7 @@ export function ChatBubble({ code, token, myId }: ChatBubbleProps) {
 
       setMessages((current) => [...current, saved]);
       recorder.discard();
+      field.current?.focus();
     } catch (cause) {
       setProblem(cause instanceof Error ? cause.message : "Não consegui enviar o áudio.");
     } finally {
@@ -113,18 +115,56 @@ export function ChatBubble({ code, token, myId }: ChatBubbleProps) {
     }
   };
 
+  const busyWithAudio = recorder.stage !== "IDLE";
+
+  const minimize = useCallback(() => {
+    setSeenCount(messages.length);
+    setShowEmojis(false);
+    setOpen(false);
+  }, [messages.length]);
+
+  useEffect(() => {
+    if (!open || busyWithAudio) {
+      return;
+    }
+
+    const outside = (event: PointerEvent) => {
+      const target = event.target as Node | null;
+
+      if (target && !panel.current?.contains(target)) {
+        minimize();
+      }
+    };
+
+    document.addEventListener("pointerdown", outside);
+
+    return () => document.removeEventListener("pointerdown", outside);
+  }, [open, busyWithAudio, minimize]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => settle(), 0);
+
+    return () => window.clearTimeout(timer);
+  }, [open, showEmojis, settle]);
+
   const unread = open ? 0 : Math.max(0, messages.length - seenCount);
 
   if (!open) {
     return (
       <button
         type="button"
+        {...handles}
+        ref={attach}
         onClick={() => {
+          if (justDragged()) {
+            return;
+          }
+
           setSeenCount(messages.length);
           setOpen(true);
         }}
-        aria-label="Abrir o chat da mesa"
-        style={{ left: spot.x, top: spot.y }}
+        aria-label="Abrir o chat da mesa. Arraste para mudar de lugar"
+        style={{ left: spot.x, top: spot.y, touchAction: "none" }}
         data-drag-root
         className="fixed z-[52] flex h-16 w-16 cursor-pointer items-center justify-center rounded-[1.4rem] border-4 border-ink bg-sun text-2xl shadow-[0_7px_0_var(--color-ink)] transition-transform duration-150 hover:-translate-y-[3px] active:translate-y-[2px]"
       >
@@ -140,6 +180,10 @@ export function ChatBubble({ code, token, myId }: ChatBubbleProps) {
 
   return (
     <div
+      ref={(node) => {
+        panel.current = node;
+        attach(node);
+      }}
       data-drag-root
       style={{ left: spot.x, top: spot.y }}
       className="fixed z-[52] flex max-h-[26rem] w-[min(21rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-[1.4rem] border-4 border-ink bg-paper shadow-[0_12px_0_var(--color-ink)]"
@@ -152,10 +196,7 @@ export function ChatBubble({ code, token, myId }: ChatBubbleProps) {
         <span className="display min-w-0 flex-1 truncate text-sm">Chat da mesa</span>
         <button
           type="button"
-          onClick={() => {
-            setSeenCount(messages.length);
-            setOpen(false);
-          }}
+          onClick={minimize}
           aria-label="Minimizar o chat"
           className="display cursor-pointer rounded-lg bg-cream/20 px-2 py-0.5 text-sm text-cream transition-colors hover:bg-cream/35"
         >
@@ -225,20 +266,13 @@ export function ChatBubble({ code, token, myId }: ChatBubbleProps) {
       ) : null}
 
       {showEmojis ? (
-        <div className="shrink-0 border-t-2 border-ink/15 bg-paper px-2 py-1.5">
-          <div className="grid grid-cols-6 gap-1">
-            {quickEmojis.map((emoji) => (
-              <button
-                key={emoji}
-                type="button"
-                onClick={() => setDraft((current) => `${current}${emoji}`)}
-                className="cursor-pointer rounded-lg py-1 text-xl transition-transform hover:scale-125"
-              >
-                {emoji}
-              </button>
-            ))}
-          </div>
-        </div>
+        <EmojiPicker
+          onPick={(emoji) =>
+            setDraft((current) =>
+              current.length + emoji.length > maxMessageLength ? current : `${current}${emoji}`,
+            )
+          }
+        />
       ) : null}
 
       <div className="shrink-0 border-t-2 border-ink/15 bg-paper p-2">
@@ -270,7 +304,7 @@ export function ChatBubble({ code, token, myId }: ChatBubbleProps) {
             className="display flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-ink bg-magenta py-2.5 text-sm text-cream shadow-[0_3px_0_var(--color-ink)]"
           >
             <span className="animate-pulse-ring h-3 w-3 rounded-full bg-cream" />
-            Gravando {recorder.elapsed}s · tocar para parar
+            Gravando {recorder.elapsed}s · Toque para parar
           </button>
         ) : (
           <div className="flex items-end gap-1.5">
@@ -284,6 +318,7 @@ export function ChatBubble({ code, token, myId }: ChatBubbleProps) {
             </button>
 
             <input
+              ref={field}
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
               onKeyDown={(event) => {

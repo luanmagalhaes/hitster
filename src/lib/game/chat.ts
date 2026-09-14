@@ -15,8 +15,12 @@ const audioTypes: Record<string, string> = {
   "audio/wav": "wav",
 };
 
+export function baseMime(mime: string): string {
+  return mime.split(";")[0].trim().toLowerCase();
+}
+
 export function extensionFor(mime: string): string | null {
-  return audioTypes[mime.split(";")[0].trim()] ?? null;
+  return audioTypes[baseMime(mime)] ?? null;
 }
 
 export function cleanText(value: string): string {
@@ -95,7 +99,7 @@ export async function saveAudio(input: {
   const path = `${input.roomId}/${crypto.randomUUID()}.${extension}`;
   const { error: sendError } = await client.storage
     .from("vt-audio")
-    .upload(path, input.bytes, { contentType: input.mime, upsert: false });
+    .upload(path, input.bytes, { contentType: baseMime(input.mime), upsert: false });
 
   if (sendError) {
     throw new ServiceError("Não consegui guardar esse áudio", 500);

@@ -12,10 +12,9 @@ export const copy = {
     joinRoom: "Entrar em uma sala",
     howToPlay: "Como jogar",
     scoreboard: "Placar",
-    footNote: "2 a 10 jogadores · um aparelho é a vitrola",
+    footNote: "2 a 10 jogadores · Um aparelho é a vitrola",
   },
   decks: {
-    title: "Escolha o baralho",
     national: "Nacional",
     nationalHint: "Da Ju Marques da Seresta a Caetano",
     international: "Internacional",

@@ -75,7 +75,7 @@ export function LobbyScreen({
           </div>
         ) : (
           <p className="text-center text-sm font-semibold text-ink/60">
-            {hostName ? `${hostName} começa a partida` : "Esperando quem abriu a sala"} · em{" "}
+            {hostName ? `${hostName} começa a partida` : "Esperando quem abriu a sala"} · Em{" "}
             {graceLeft}s libera para todos
           </p>
         )
@@ -180,8 +180,8 @@ export function LobbyScreen({
           </ul>
 
           <p className="mt-4 rounded-2xl border-2 border-ink bg-sun-light p-3 text-xs font-semibold text-ink/70">
-            {levelLabels[room.difficulty] ?? room.difficulty} · baralho{" "}
-            {deckLabels[room.deck] ?? room.deck} · {cards(room.seed_cards)} de saída · alvo{" "}
+            {levelLabels[room.difficulty] ?? room.difficulty} · Baralho{" "}
+            {deckLabels[room.deck] ?? room.deck} · {cards(room.seed_cards)} de saída · Alvo{" "}
             {room.target_cards}
           </p>
         </div>
