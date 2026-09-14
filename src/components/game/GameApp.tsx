@@ -8,6 +8,7 @@ import { NoticeModal } from "@/components/game/NoticeModal";
 import { ResultModal } from "@/components/game/ResultModal";
 import { StarterRoll } from "@/components/game/StarterRoll";
 import { StealModal } from "@/components/game/StealModal";
+import { ThiefButton } from "@/components/game/ThiefButton";
 import { StealNewsModal } from "@/components/game/StealNewsModal";
 import { JoinScreen } from "@/components/game/JoinScreen";
 import { LobbyScreen } from "@/components/game/LobbyScreen";
@@ -18,7 +19,7 @@ import { useRoom } from "@/hooks/useRoom";
 import { useSession } from "@/hooks/useSession";
 import { useNow } from "@/hooks/useNow";
 import { useTurnBuzz } from "@/hooks/useTurnBuzz";
-import { secondsUntilSteal, stealBlock } from "@/lib/game/steal";
+import { modeLabels, secondsUntilSteal, stealBlock, windowFor, type GameMode } from "@/lib/game/steal";
 import { api } from "@/lib/api";
 import { rememberStarter, starterSeen } from "@/lib/session";
 import {
@@ -39,6 +40,7 @@ export function GameApp() {
   const [view, setView] = useState<View>("HOME");
   const [deck, setDeck] = useState<DeckKind>("MIXED");
   const [difficulty, setDifficulty] = useState("CLASSIC");
+  const [mode, setMode] = useState<GameMode>("CLASSIC");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [seenResultId, setSeenResultId] = useState<string | null>(null);
@@ -81,7 +83,9 @@ export function GameApp() {
   const now = useNow(1000);
   const trackStartedAt = state?.room.current_started_at ?? null;
   const listenedSeconds = trackStartedAt ? (now - new Date(trackStartedAt).getTime()) / 1000 : 0;
-  const stealSeconds = state?.room.steal_seconds ?? 30;
+  const stealSeconds = state
+    ? windowFor(state.room.mode, state.room.steal_count)
+    : 30;
   const stolenByMe = Boolean(state?.meId && state.room.steal_player_id === state.meId);
   const myTokens = state?.players.find((player) => player.id === state.meId)?.tokens ?? 0;
   const mySpareCards = state
@@ -143,15 +147,17 @@ export function GameApp() {
         return waited !== null && waited >= room.turn_seconds;
       }
 
+      const window = windowFor(room.mode, room.steal_count);
+
       if (room.steal_player_id) {
         const held = since(room.steal_started_at);
 
-        return held !== null && held >= room.steal_seconds;
+        return held !== null && held >= window;
       }
 
       const open = since(room.current_started_at);
 
-      return open !== null && open >= room.turn_seconds + room.steal_seconds;
+      return open !== null && open >= room.turn_seconds + window;
     };
 
     const check = async () => {
@@ -274,6 +280,8 @@ export function GameApp() {
           deck={deck}
           difficulty={difficulty}
           onDifficulty={setDifficulty}
+          gameMode={mode}
+          onMode={setMode}
           busy={busy}
           error={error}
           onBack={() => setView("HOME")}
@@ -297,7 +305,7 @@ export function GameApp() {
 
               const result =
                 view === "CREATE"
-                  ? await api.createRoom(input.name, deck, difficulty)
+                  ? await api.createRoom(input.name, deck, difficulty, mode)
                   : await api.joinRoom(input.code, input.name);
 
               save(result);
@@ -383,18 +391,26 @@ export function GameApp() {
           onClose={() => setSeenStealId(freshSteal.id)}
         />
       ) : offerSteal ? (
-        <StealModal
-          victimName={victimName}
-          spareCards={mySpareCards}
-          busy={busy}
-          onSteal={() =>
-            run(async () => {
-              await api.steal(session.code, session.accessToken);
-              await refresh();
-            })
-          }
-          onDismiss={() => setPassedOnTrack(state.room.current_track_id)}
-        />
+        <>
+          <StealModal
+            victimName={victimName}
+            spareCards={mySpareCards}
+            busy={busy}
+            onDismiss={() => setPassedOnTrack(state.room.current_track_id)}
+          />
+          {stealShut === null ? (
+            <ThiefButton
+              seed={`${state.room.current_track_id ?? "x"}-${state.room.steal_count}`}
+              disabled={busy}
+              onSteal={() =>
+                run(async () => {
+                  await api.steal(session.code, session.accessToken);
+                  await refresh();
+                })
+              }
+            />
+          ) : null}
+        </>
       ) : null}
 
       {showStarter && starterId ? (
@@ -433,6 +449,8 @@ export function GameApp() {
       turnSeconds={turnSeconds}
       stolenByMe={stolenByMe}
       stealCountdown={secondsUntilSteal(listenedSeconds, stealSeconds)}
+      modeLabel={modeLabels[state.room.mode]}
+      stealWindow={stealSeconds}
       thiefName={
         state.room.steal_player_id
           ? (state.players.find((player) => player.id === state.room.steal_player_id)?.name ?? null)

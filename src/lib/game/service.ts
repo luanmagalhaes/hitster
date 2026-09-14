@@ -1,7 +1,7 @@
 import { tracksForDeck, trackById } from "@/data/tracks";
 import { answerMatches, findPreview } from "@/lib/deezer";
 import { difficultyPresets, pickSpreadSeeds, type Difficulty } from "@/lib/game/seeds";
-import { stealBlock, stealBlockMessage } from "@/lib/game/steal";
+import { stealBlock, stealBlockMessage, windowFor, type GameMode } from "@/lib/game/steal";
 import {
   correctSlotIndex,
   isSlotCorrect,
@@ -238,6 +238,7 @@ export async function createRoom(input: {
   hostName: string;
   deck: DeckKind;
   difficulty?: Difficulty;
+  mode?: GameMode;
 }) {
   const client = serverClient();
   const { data: code, error: codeError } = await client.rpc("vt_generate_code");
@@ -255,6 +256,7 @@ export async function createRoom(input: {
       code,
       deck: input.deck,
       difficulty,
+      mode: input.mode ?? "CLASSIC",
       seed_cards: preset.seedCards,
       target_cards: preset.targetCards,
       token_cost: preset.tokenCost,
@@ -469,7 +471,11 @@ export async function drawTrack(input: { code: string; token: string }) {
 
   await client
     .from("vt_rooms")
-    .update({ current_track_id: trackId, current_started_at: new Date().toISOString() })
+    .update({
+      current_track_id: trackId,
+      current_started_at: new Date().toISOString(),
+      steal_count: 0,
+    })
     .eq("id", room.id);
 
   await record({ roomId: room.id, type: "TRACK_DRAWN", actorId: me.id });
@@ -725,6 +731,7 @@ export async function submitGuess(input: {
         steal_player_id: null,
         steal_started_at: null,
         last_steal: null,
+        steal_count: 0,
       })
       .eq("id", room.id);
 
@@ -738,6 +745,7 @@ export async function submitGuess(input: {
         steal_player_id: null,
         steal_started_at: null,
         last_steal: null,
+        steal_count: 0,
         turn_player_id: nextPlayer?.id ?? owner?.id ?? me.id,
         turn_started_at: new Date().toISOString(),
       })
@@ -771,7 +779,7 @@ export async function claimSteal(input: { code: string; token: string }) {
     isMyTurn: room.turn_player_id === me.id,
     stolenBy: room.steal_player_id,
     elapsedSeconds,
-    waitSeconds: room.steal_seconds,
+    waitSeconds: windowFor(room.mode, room.steal_count),
     spareCards: spareCards ?? 0,
   });
 
@@ -795,7 +803,12 @@ export async function claimSteal(input: { code: string; token: string }) {
 
   const { data: claimed } = await client
     .from("vt_rooms")
-    .update({ steal_player_id: me.id, last_steal: news, steal_started_at: new Date().toISOString() })
+    .update({
+      steal_player_id: me.id,
+      last_steal: news,
+      steal_started_at: new Date().toISOString(),
+      steal_count: room.steal_count + 1,
+    })
     .eq("id", room.id)
     .is("steal_player_id", null)
     .select("id");
@@ -825,7 +838,7 @@ export async function expireSteal(input: { code: string }) {
 
   const claimedAt = room.steal_started_at ? new Date(room.steal_started_at).getTime() : null;
 
-  if (!claimedAt || (Date.now() - claimedAt) / 1000 < room.steal_seconds) {
+  if (!claimedAt || (Date.now() - claimedAt) / 1000 < windowFor(room.mode, room.steal_count)) {
     return { expired: false as const };
   }
 

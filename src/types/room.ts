@@ -64,6 +64,8 @@ export interface RoomRow {
   steal_player_id: string | null;
   steal_started_at: string | null;
   steal_seconds: number;
+  mode: "CLASSIC" | "LIGHTNING";
+  steal_count: number;
   last_steal: StealNews | null;
 }
 

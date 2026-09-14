@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/Button";
 import { Thief } from "@/components/ui/Thief";
 import { stealPenaltyCards } from "@/lib/game/steal";
 import { cards } from "@/utils/plural";
@@ -9,17 +8,10 @@ interface StealModalProps {
   victimName: string;
   spareCards: number;
   busy: boolean;
-  onSteal: () => void;
   onDismiss: () => void;
 }
 
-export function StealModal({
-  victimName,
-  spareCards,
-  busy,
-  onSteal,
-  onDismiss,
-}: StealModalProps) {
+export function StealModal({ victimName, spareCards, busy, onDismiss }: StealModalProps) {
   const broke = spareCards < stealPenaltyCards;
 
   return (
@@ -64,9 +56,13 @@ export function StealModal({
           ) : null}
 
           <div className="mt-4 flex flex-col gap-2">
-            <Button variant="ink" size="lg" fullWidth disabled={busy || broke} onClick={onSteal}>
-              {busy ? "Roubando..." : "Roubar essa música"}
-            </Button>
+            {broke ? null : (
+              <p className="rounded-2xl border-2 border-dashed border-ink/35 px-3 py-2.5 text-center text-xs font-semibold text-ink">
+                O ladrãozinho apareceu em algum canto da tela.
+                <br />
+                Ache e toque nele antes dos outros.
+              </p>
+            )}
             <button
               type="button"
               onClick={onDismiss}

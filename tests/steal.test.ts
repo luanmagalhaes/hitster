@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  windowFor,
   secondsUntilSteal,
   stealBlock,
   stealBlockMessage,
@@ -83,5 +84,33 @@ describe("mensagens de recusa", () => {
     expect(stealBlockMessage("TOO_EARLY")).toContain("tempo");
     expect(stealBlockMessage("TAKEN")).toContain("primeiro");
     expect(stealBlockMessage("NO_CARD")).toContain("saída");
+  });
+});
+
+describe("janela de resposta por modalidade", () => {
+  it("no Clássico dá sempre os mesmos 30 segundos", () => {
+    expect(windowFor("CLASSIC", 0)).toBe(30);
+    expect(windowFor("CLASSIC", 3)).toBe(30);
+  });
+
+  it("no Relâmpago começa com 5 segundos para quem está na vez", () => {
+    expect(windowFor("LIGHTNING", 0)).toBe(5);
+  });
+
+  it("cresce de cinco em cinco a cada roubo", () => {
+    expect(windowFor("LIGHTNING", 1)).toBe(10);
+    expect(windowFor("LIGHTNING", 2)).toBe(15);
+    expect(windowFor("LIGHTNING", 3)).toBe(20);
+    expect(windowFor("LIGHTNING", 4)).toBe(25);
+  });
+
+  it("para de crescer nos 30 segundos", () => {
+    expect(windowFor("LIGHTNING", 5)).toBe(30);
+    expect(windowFor("LIGHTNING", 9)).toBe(30);
+    expect(windowFor("LIGHTNING", 40)).toBe(30);
+  });
+
+  it("nunca devolve janela negativa nem menor que a primeira", () => {
+    expect(windowFor("LIGHTNING", -3)).toBe(5);
   });
 });

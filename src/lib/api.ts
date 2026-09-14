@@ -76,10 +76,10 @@ export interface GuessResult {
 }
 
 export const api = {
-  createRoom: (hostName: string, deck: DeckKind, difficulty: string) =>
+  createRoom: (hostName: string, deck: DeckKind, difficulty: string, mode: string) =>
     request<JoinResponse>("/api/rooms", {
       method: "POST",
-      body: JSON.stringify({ hostName, deck, difficulty }),
+      body: JSON.stringify({ hostName, deck, difficulty, mode }),
     }),
 
   steal: (code: string, token: string) =>

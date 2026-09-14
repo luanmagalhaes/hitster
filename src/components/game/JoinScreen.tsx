@@ -33,6 +33,8 @@ const levels = [
 
 interface JoinScreenProps {
   mode: "CREATE" | "JOIN";
+  gameMode: "CLASSIC" | "LIGHTNING";
+  onMode: (value: "CLASSIC" | "LIGHTNING") => void;
   deck: DeckKind;
   difficulty: string;
   onDifficulty: (value: string) => void;
@@ -50,6 +52,8 @@ const deckLabels: Record<DeckKind, string> = {
 
 export function JoinScreen({
   mode,
+  gameMode,
+  onMode,
   deck,
   difficulty,
   onDifficulty,
@@ -161,6 +165,44 @@ export function JoinScreen({
                 </button>
               ))}
             </div>
+            <span className="display mt-5 mb-2 block text-xs uppercase tracking-[0.18em] text-ink/50">
+              Ritmo do roubo
+            </span>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {[
+                {
+                  key: "CLASSIC" as const,
+                  label: "Clássico",
+                  head: "30s",
+                  hint: "quem está na vez tem 30 segundos antes de liberar o roubo",
+                },
+                {
+                  key: "LIGHTNING" as const,
+                  label: "Relâmpago",
+                  head: "5s",
+                  hint: "começa com 5 e cada roubo dá 5 a mais, até 30",
+                },
+              ].map((option) => (
+                <button
+                  key={option.key}
+                  type="button"
+                  onClick={() => onMode(option.key)}
+                  aria-pressed={gameMode === option.key}
+                  className={`display cursor-pointer rounded-2xl border-2 border-ink px-3 py-3 text-center transition-all duration-150 hover:-translate-y-[2px] ${
+                    gameMode === option.key
+                      ? "bg-grape text-cream shadow-[0_5px_0_var(--color-ink)]"
+                      : "bg-paper text-ink hover:bg-sun-light"
+                  }`}
+                >
+                  <span className="block text-lg leading-none">{option.head}</span>
+                  <span className="mt-1 block text-[0.7rem] font-semibold">{option.label}</span>
+                  <span className="mt-0.5 block text-[0.6rem] font-semibold opacity-70">
+                    {option.hint}
+                  </span>
+                </button>
+              ))}
+            </div>
+
             <p className="mt-2 text-xs text-ink/55">
               O número é quantas cartas de ano você recebe no começo. No Clássico é uma só, e o jogo
               aperta sozinho: cada carta que entra cria um intervalo novo e menor. Começar com mais

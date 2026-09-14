@@ -23,6 +23,8 @@ interface TableScreenProps {
   stolenByMe: boolean;
   stealCountdown: number;
   thiefName: string | null;
+  modeLabel: string;
+  stealWindow: number;
   audio: ReactNode;
   onPlay: () => void;
   onGuess: (input: { slotIndex: number; artistGuess?: string; titleGuess?: string }) => void;
@@ -70,6 +72,8 @@ export function TableScreen({
   stolenByMe,
   stealCountdown,
   thiefName,
+  modeLabel,
+  stealWindow,
   audio,
   onPlay,
   onGuess,
@@ -158,6 +162,12 @@ export function TableScreen({
           </span>
           <span className="display rounded-full border-2 border-ink bg-ink px-3 py-1 text-xs text-sun">
             {remaining} no monte
+          </span>
+          <span
+            className="display rounded-full border-2 border-ink bg-grape px-3 py-1 text-xs text-cream"
+            title={`Quem tem a bola responde em ${stealWindow}s antes de liberar o roubo`}
+          >
+            {modeLabel} · {stealWindow}s
           </span>
           <button
             type="button"

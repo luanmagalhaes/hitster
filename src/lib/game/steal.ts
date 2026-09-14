@@ -1,5 +1,22 @@
 export const stealPenaltyCards = 1;
 
+export const classicWindow = 30;
+export const lightningFirstWindow = 5;
+export const lightningStep = 5;
+export const lightningCeiling = 30;
+
+export type GameMode = "CLASSIC" | "LIGHTNING";
+
+export function windowFor(mode: GameMode, stealCount: number): number {
+  if (mode === "CLASSIC") {
+    return classicWindow;
+  }
+
+  const taken = Math.max(0, stealCount);
+
+  return Math.min(lightningCeiling, lightningFirstWindow + taken * lightningStep);
+}
+
 export type StealBlock =
   | "NOT_PLAYING"
   | "NOTHING_PLAYING"
@@ -17,6 +34,11 @@ export interface StealChance {
   waitSeconds: number;
   spareCards: number;
 }
+
+export const modeLabels: Record<GameMode, string> = {
+  CLASSIC: "Clássico",
+  LIGHTNING: "Relâmpago",
+};
 
 export function secondsUntilSteal(elapsedSeconds: number, waitSeconds: number): number {
   return Math.max(0, Math.ceil(waitSeconds - elapsedSeconds));
