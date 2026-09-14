@@ -32,7 +32,7 @@ export function SplashScreen({ onDone }: SplashScreenProps) {
 
   return (
     <div
-      className={`stage-sun fixed inset-0 z-50 flex flex-col items-center justify-center gap-8 overflow-hidden px-8 ${
+      className={`stage-sun fixed inset-0 z-[95] flex flex-col items-center justify-center gap-8 overflow-hidden px-8 ${
         leaving ? "animate-curtain-out" : ""
       }`}
     >
