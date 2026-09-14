@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AudioDeck } from "@/components/game/AudioDeck";
 import { HomeScreen } from "@/components/game/HomeScreen";
+import { HowToPlay } from "@/components/game/HowToPlay";
 import { NoticeModal } from "@/components/game/NoticeModal";
 import { ResultModal } from "@/components/game/ResultModal";
 import { StarterRoll } from "@/components/game/StarterRoll";
@@ -20,10 +21,18 @@ import { useTurnBuzz } from "@/hooks/useTurnBuzz";
 import { secondsUntilSteal, stealBlock } from "@/lib/game/steal";
 import { api } from "@/lib/api";
 import { rememberStarter, starterSeen } from "@/lib/session";
+import {
+  prefsSnapshot,
+  rememberTutorialSeen,
+  serverPrefsSnapshot,
+  subscribePrefs,
+} from "@/lib/prefs";
 import type { RoomRow } from "@/types/room";
 import type { DeckKind } from "@/types/track";
 
 type View = "HOME" | "CREATE" | "JOIN";
+
+const previewAttempts = 4;
 
 export function GameApp() {
   const { session, save, clear, seats, seatFor, forget } = useSession();
@@ -39,6 +48,9 @@ export function GameApp() {
   const [confirmingLeave, setConfirmingLeave] = useState(false);
   const [seenStealId, setSeenStealId] = useState<string | null>(null);
   const [passedOnTrack, setPassedOnTrack] = useState<string | null>(null);
+  const [askedRules, setAskedRules] = useState(false);
+  const prefs = useSyncExternalStore(subscribePrefs, prefsSnapshot, serverPrefsSnapshot);
+  const showRules = askedRules || !prefs.tutorialSeen;
 
   const { state, refresh } = useRoom(session?.code ?? null, session?.accessToken ?? null);
 
@@ -163,25 +175,62 @@ export function GameApp() {
   useEffect(() => {
     const code = session?.code;
 
-    if (!code || !currentTrackId || currentTrackId in previews) {
+    if (!code || !currentTrackId || previews[currentTrackId]) {
       return;
     }
 
     let active = true;
+    let attempt = 0;
+    let timer = 0;
 
-    void api
-      .nowPlaying(code)
-      .then((data) => {
-        if (active && data.trackId) {
-          setPreviews((current) => ({ ...current, [data.trackId as string]: data.previewUrl }));
+    const look = async () => {
+      if (!active) {
+        return;
+      }
+
+      attempt += 1;
+
+      try {
+        const data = await api.nowPlaying(code);
+
+        if (!active) {
+          return;
         }
-      })
-      .catch(() => undefined);
+
+        if (data.trackId && data.previewUrl) {
+          setPreviews((current) => ({ ...current, [data.trackId as string]: data.previewUrl }));
+
+          return;
+        }
+      } catch {
+        if (!active) {
+          return;
+        }
+      }
+
+      if (attempt < previewAttempts) {
+        timer = window.setTimeout(() => void look(), attempt * 1500);
+      } else if (active) {
+        setPreviews((current) => ({ ...current, [currentTrackId]: null }));
+      }
+    };
+
+    void look();
 
     return () => {
       active = false;
+      window.clearTimeout(timer);
     };
   }, [session?.code, currentTrackId, previews]);
+
+  const rulesGate = showRules ? (
+    <HowToPlay
+      onClose={() => {
+        setAskedRules(false);
+        rememberTutorialSeen();
+      }}
+    />
+  ) : null;
 
   const run = useCallback(
     async (action: () => Promise<unknown>) => {
@@ -218,7 +267,9 @@ export function GameApp() {
   if (!session) {
     if (view === "CREATE" || view === "JOIN") {
       return (
-        <JoinScreen
+        <>
+          {rulesGate}
+          <JoinScreen
           mode={view === "CREATE" ? "CREATE" : "JOIN"}
           deck={deck}
           difficulty={difficulty}
@@ -253,27 +304,32 @@ export function GameApp() {
               setView("HOME");
             })
           }
-        />
+          />
+        </>
       );
     }
 
     return (
-      <HomeScreen
-        deck={deck}
-        onDeck={setDeck}
-        seats={seats}
-        onResume={(seat) =>
-          save({
-            code: seat.code,
-            playerId: seat.playerId,
-            accessToken: seat.accessToken,
-            name: seat.name,
-          })
-        }
-        onForget={forget}
-        onCreate={() => setView("CREATE")}
-        onJoin={() => setView("JOIN")}
-      />
+      <>
+        {rulesGate}
+        <HomeScreen
+          deck={deck}
+          onDeck={setDeck}
+          seats={seats}
+          onResume={(seat) =>
+            save({
+              code: seat.code,
+              playerId: seat.playerId,
+              accessToken: seat.accessToken,
+              name: seat.name,
+            })
+          }
+          onForget={forget}
+          onCreate={() => setView("CREATE")}
+          onJoin={() => setView("JOIN")}
+          onRules={() => setAskedRules(true)}
+        />
+      </>
     );
   }
 
@@ -301,20 +357,25 @@ export function GameApp() {
 
   if (state.room.phase === "LOBBY") {
     return (
-      <LobbyScreen
-        room={state.room}
-        players={state.players}
-        isHost={me?.is_host ?? false}
-        busy={busy}
-        error={error}
-        onStart={() => run(() => api.start(session.code, session.accessToken))}
-        onLeave={leave}
-      />
+      <>
+        {rulesGate}
+        <LobbyScreen
+          room={state.room}
+          players={state.players}
+          isHost={me?.is_host ?? false}
+          busy={busy}
+          error={error}
+          onStart={() => run(() => api.start(session.code, session.accessToken))}
+          onLeave={leave}
+        />
+      </>
     );
   }
 
   return (
     <>
+      {rulesGate}
+
       {freshSteal ? (
         <StealNewsModal
           news={freshSteal}
@@ -379,8 +440,9 @@ export function GameApp() {
       }
       audio={
         <AudioDeck
-          previewUrl={currentTrackId ? previews[currentTrackId] ?? null : null}
+          previewUrl={currentTrackId ? (previews[currentTrackId] ?? null) : null}
           hasTrack={Boolean(currentTrackId)}
+          searching={currentTrackId !== null && !(currentTrackId in previews)}
           onSkip={() => run(() => api.skip(session.code, session.accessToken))}
         />
       }
@@ -396,6 +458,7 @@ export function GameApp() {
         })
       }
         onLeave={() => setConfirmingLeave(true)}
+      onRules={() => setAskedRules(true)}
       />
 
       {confirmingLeave ? (

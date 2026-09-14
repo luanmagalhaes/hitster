@@ -26,6 +26,7 @@ interface HomeScreenProps {
   onResume: (seat: RecentSeat) => void;
   onForget: (code: string) => void;
   onCreate: () => void;
+  onRules: () => void;
   onJoin: () => void;
 }
 
@@ -36,6 +37,7 @@ export function HomeScreen({
   onResume,
   onForget,
   onCreate,
+  onRules,
   onJoin,
 }: HomeScreenProps) {
   const lastSeat = seats[0];
@@ -66,6 +68,13 @@ export function HomeScreen({
               </div>
             ) : null}
 
+            <button
+              type="button"
+              onClick={onRules}
+              className="display cursor-pointer rounded-xl px-3 py-1.5 text-sm text-ink/60 transition-colors hover:text-ink"
+            >
+              Como se joga?
+            </button>
             <Button variant="ink" size="lg" fullWidth onClick={onCreate}>
               {copy.home.createRoom}
             </Button>

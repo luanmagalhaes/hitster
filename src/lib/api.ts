@@ -1,22 +1,44 @@
 import type { EventRow, PlayerRow, RoomRow, TimelineCardRow } from "@/types/room";
 import type { DeckKind } from "@/types/track";
+import { messageForStatus, networkMessage, unreadableMessage } from "@/lib/messages";
 
 export class ApiError extends Error {}
 
 async function request<T>(path: string, init: RequestInit = {}, token?: string): Promise<T> {
-  const response = await fetch(path, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { "x-player-token": token } : {}),
-      ...init.headers,
-    },
-  });
+  let response: Response;
 
-  const payload = await response.json().catch(() => ({}));
+  try {
+    response = await fetch(path, {
+      ...init,
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { "x-player-token": token } : {}),
+        ...init.headers,
+      },
+    });
+  } catch {
+    throw new ApiError(
+      networkMessage(typeof navigator === "undefined" || navigator.onLine !== false),
+    );
+  }
+
+  let payload: unknown = null;
+
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
 
   if (!response.ok) {
-    throw new ApiError((payload as { error?: string }).error ?? "algo deu errado, tente de novo");
+    const given = (payload as { error?: string } | null)?.error;
+
+    throw new ApiError(given ?? messageForStatus(response.status));
+  }
+
+  if (payload === null) {
+    throw new ApiError(unreadableMessage);
   }
 
   return payload as T;
@@ -36,7 +58,6 @@ export interface RoomState {
   events: EventRow[];
   remaining: number;
   meId: string | null;
-  version: string;
 }
 
 export interface GuessResult {

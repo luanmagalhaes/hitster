@@ -30,6 +30,7 @@ interface TableScreenProps {
   onRemovePlayer: (playerId: string) => void;
   isHost: boolean;
   onLeave: () => void;
+  onRules: () => void;
 }
 
 const eventLabels: Record<string, string> = {
@@ -76,6 +77,7 @@ export function TableScreen({
   onRemovePlayer,
   isHost,
   onLeave,
+  onRules,
 }: TableScreenProps) {
   const [confirmingRemoval, setConfirmingRemoval] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -157,6 +159,13 @@ export function TableScreen({
           <span className="display rounded-full border-2 border-ink bg-ink px-3 py-1 text-xs text-sun">
             {remaining} no monte
           </span>
+          <button
+            type="button"
+            onClick={onRules}
+            className="display cursor-pointer rounded-full border-2 border-ink bg-paper px-2.5 py-1 text-xs text-ink transition-colors hover:bg-sun-light"
+          >
+            regras
+          </button>
           <Wordmark size="sm" className="hidden opacity-45 sm:inline-block" />
         </div>
       </header>

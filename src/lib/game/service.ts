@@ -42,7 +42,7 @@ async function loadRoom(code: string): Promise<RoomRow> {
   }
 
   if (!data) {
-    throw new ServiceError("sala não encontrada", 404);
+    throw new ServiceError("Sala não encontrada", 404);
   }
 
   return data as RoomRow;
@@ -61,7 +61,7 @@ async function loadPlayer(room: RoomRow, token: string) {
   }
 
   if (!data) {
-    throw new ServiceError("você não está mais nesta sala", 401);
+    throw new ServiceError("Você não está mais nesta sala", 401);
   }
 
   return (data as unknown as { player_id: string; vt_players: PlayerRow }).vt_players;
@@ -122,7 +122,7 @@ async function detachPlayer(input: {
   const others = (roster ?? []).filter((player) => player.id !== target.id);
 
   if (others.length === 0) {
-    throw new ServiceError("não dá para esvaziar a sala", 409);
+    throw new ServiceError("Não dá para esvaziar a sala", 409);
   }
 
   const { data: theirCards } = await client
@@ -220,7 +220,7 @@ async function seatFor(roomId: string) {
     .eq("room_id", roomId);
 
   if ((count ?? 0) >= maxPlayers) {
-    throw new ServiceError(`a sala está cheia (máximo de ${maxPlayers} jogadores)`, 409);
+    throw new ServiceError(`A sala está cheia (máximo de ${maxPlayers} jogadores)`, 409);
   }
 
   const { data: last } = await client
@@ -282,11 +282,11 @@ export async function joinRoom(input: { code: string; name: string; isHost?: boo
   const name = input.name.trim();
 
   if (name.length < 1 || name.length > 24) {
-    throw new ServiceError("escolha um nome de 1 a 24 caracteres", 422);
+    throw new ServiceError("Escolha um nome de 1 a 24 caracteres", 422);
   }
 
   if (room.phase !== RoomPhase.Lobby) {
-    throw new ServiceError("essa partida já começou", 409);
+    throw new ServiceError("Essa partida já começou", 409);
   }
 
   const seat = await seatFor(room.id);
@@ -336,11 +336,11 @@ export async function startMatch(input: { code: string; token: string }) {
   const me = await loadPlayer(room, input.token);
 
   if (!me.is_host) {
-    throw new ServiceError("só o host pode começar a partida", 403);
+    throw new ServiceError("Só o host pode começar a partida", 403);
   }
 
   if (room.phase !== RoomPhase.Lobby) {
-    throw new ServiceError("essa partida já começou", 409);
+    throw new ServiceError("Essa partida já começou", 409);
   }
 
   const { data: players } = await client
@@ -352,7 +352,7 @@ export async function startMatch(input: { code: string; token: string }) {
   const roster = players ?? [];
 
   if (roster.length < minPlayers) {
-    throw new ServiceError(`precisa de pelo menos ${minPlayers} jogadores`, 409);
+    throw new ServiceError(`Precisa de pelo menos ${minPlayers} jogadores`, 409);
   }
 
   const pool = tracksForDeck(room.deck);
@@ -436,11 +436,11 @@ export async function drawTrack(input: { code: string; token: string }) {
   const me = await loadPlayer(room, input.token);
 
   if (room.phase !== RoomPhase.Playing) {
-    throw new ServiceError("a partida não está em andamento", 409);
+    throw new ServiceError("A partida não está em andamento", 409);
   }
 
   if (room.turn_player_id !== me.id) {
-    throw new ServiceError("não é a sua vez", 409);
+    throw new ServiceError("Não é a sua vez", 409);
   }
 
   if (room.current_track_id) {
@@ -509,7 +509,7 @@ async function finishByPileOut(roomId: string): Promise<never> {
     });
   }
 
-  throw new ServiceError("o monte acabou e a partida foi encerrada", 409);
+  throw new ServiceError("O monte acabou e a partida foi encerrada", 409);
 }
 
 export async function submitGuess(input: {
@@ -524,27 +524,27 @@ export async function submitGuess(input: {
   const me = await loadPlayer(room, input.token);
 
   if (room.phase !== RoomPhase.Playing) {
-    throw new ServiceError("a partida não está em andamento", 409);
+    throw new ServiceError("A partida não está em andamento", 409);
   }
 
   const stealing = Boolean(room.steal_player_id) && room.steal_player_id === me.id;
 
   if (room.steal_player_id && !stealing) {
-    throw new ServiceError("essa rodada foi roubada, a resposta agora é de quem roubou", 409);
+    throw new ServiceError("Essa rodada foi roubada, a resposta agora é de quem roubou", 409);
   }
 
   if (!stealing && room.turn_player_id !== me.id) {
-    throw new ServiceError("não é a sua vez", 409);
+    throw new ServiceError("Não é a sua vez", 409);
   }
 
   if (!room.current_track_id) {
-    throw new ServiceError("nenhuma música está tocando", 409);
+    throw new ServiceError("Nenhuma música está tocando", 409);
   }
 
   const track = trackById(room.current_track_id);
 
   if (!track) {
-    throw new ServiceError("faixa desconhecida", 500);
+    throw new ServiceError("Faixa desconhecida", 500);
   }
 
   const { data: mine } = await client
@@ -556,7 +556,7 @@ export async function submitGuess(input: {
   const years = (mine ?? []).map((row) => row.year as number);
 
   if (!isValidSlot(years, input.slotIndex)) {
-    throw new ServiceError("escolha uma das posições da sua linha do tempo", 422);
+    throw new ServiceError("Escolha uma das posições da sua linha do tempo", 422);
   }
 
   const correct = isSlotCorrect(years, input.slotIndex, track.year);
@@ -921,15 +921,15 @@ export async function skipTrack(input: { code: string; token: string }) {
   const me = await loadPlayer(room, input.token);
 
   if (room.steal_player_id && room.steal_player_id !== me.id) {
-    throw new ServiceError("essa rodada foi roubada, não dá para pular a faixa agora", 409);
+    throw new ServiceError("Essa rodada foi roubada, não dá para pular a faixa agora", 409);
   }
 
   if (!room.steal_player_id && room.turn_player_id !== me.id) {
-    throw new ServiceError("não é a sua vez", 409);
+    throw new ServiceError("Não é a sua vez", 409);
   }
 
   if (!room.current_track_id) {
-    throw new ServiceError("nenhuma música está tocando", 409);
+    throw new ServiceError("Nenhuma música está tocando", 409);
   }
 
   await client
@@ -954,16 +954,15 @@ export async function spendTokens(input: { code: string; token: string }) {
   const me = await loadPlayer(room, input.token);
 
   if (room.steal_player_id === me.id) {
-    throw new ServiceError("você roubou esta rodada, responda antes de trocar fichas", 409);
+    throw new ServiceError("Você roubou esta rodada, responda antes de trocar fichas", 409);
   }
 
   if (room.phase !== RoomPhase.Playing) {
-    throw new ServiceError("a partida não está em andamento", 409);
+    throw new ServiceError("A partida não está em andamento", 409);
   }
 
   if (me.tokens < room.token_cost) {
-    throw new ServiceError(
-      `você precisa de ${room.token_cost} fichas e tem ${me.tokens === 1 ? "1 ficha" : `${me.tokens} fichas`}`,
+    throw new ServiceError(`Você precisa de ${room.token_cost} fichas e tem ${me.tokens === 1 ? "1 ficha" : `${me.tokens} fichas`}`,
       409,
     );
   }
@@ -983,7 +982,7 @@ export async function spendTokens(input: { code: string; token: string }) {
   const track = trackById(top.track_id as string);
 
   if (!track) {
-    throw new ServiceError("faixa desconhecida", 500);
+    throw new ServiceError("Faixa desconhecida", 500);
   }
 
   await client
@@ -1042,11 +1041,11 @@ export async function removePlayer(input: { code: string; token: string; playerI
   const me = await loadPlayer(room, input.token);
 
   if (!me.is_host) {
-    throw new ServiceError("só o host pode remover jogadores", 403);
+    throw new ServiceError("Só o host pode remover jogadores", 403);
   }
 
   if (input.playerId === me.id) {
-    throw new ServiceError("o host não pode remover a si mesmo", 422);
+    throw new ServiceError("O host não pode remover a si mesmo", 422);
   }
 
   const { data: target } = await serverClient()
@@ -1057,7 +1056,7 @@ export async function removePlayer(input: { code: string; token: string; playerI
     .maybeSingle();
 
   if (!target) {
-    throw new ServiceError("esse jogador não está nesta sala", 404);
+    throw new ServiceError("Esse jogador não está nesta sala", 404);
   }
 
   const outcome = await detachPlayer({

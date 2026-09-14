@@ -52,12 +52,12 @@ export function stealBlock(chance: StealChance): StealBlock | null {
 
 export function stealBlockMessage(block: StealBlock): string {
   const messages: Record<StealBlock, string> = {
-    NOT_PLAYING: "a partida não está em andamento",
-    NOTHING_PLAYING: "nenhuma música está tocando",
-    MY_TURN: "a vez é sua, não há o que roubar",
-    TAKEN: "outra pessoa roubou primeiro",
-    TOO_EARLY: "ainda dá tempo de quem está na vez responder",
-    NO_CARD: "você só tem a carta de saída, e ela não pode ser apostada",
+    NOT_PLAYING: "A partida não está em andamento",
+    NOTHING_PLAYING: "Nenhuma música está tocando",
+    MY_TURN: "A vez é sua, não há o que roubar",
+    TAKEN: "Outra pessoa roubou primeiro",
+    TOO_EARLY: "Ainda dá tempo de quem está na vez responder",
+    NO_CARD: "Você só tem a carta de saída, e ela não pode ser apostada",
   };
 
   return messages[block];

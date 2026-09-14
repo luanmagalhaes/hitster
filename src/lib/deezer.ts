@@ -48,8 +48,21 @@ async function search(query: string): Promise<DeezerTrack[]> {
   return payload.data ?? [];
 }
 
+function spellings(name: string): string[] {
+  const swapped = /\s+e\s+/i.test(name)
+    ? name.replace(/\s+e\s+/gi, " & ")
+    : name.includes("&")
+      ? name.replace(/\s*&\s*/g, " e ")
+      : null;
+
+  const bare = name.replace(/\s*&\s*/g, " ").replace(/\s+e\s+/gi, " ");
+
+  return [...new Set([name, swapped, bare].filter((value): value is string => Boolean(value)))];
+}
+
 export async function findPreview(artist: string, title: string): Promise<DeezerMatch> {
-  const queries = [`artist:"${artist}" track:"${title}"`, `${artist} ${title}`, title];
+  const names = spellings(artist);
+  const queries = [...names.map((name) => `${name} ${title}`), title];
 
   for (const query of queries) {
     const results = await search(query);
@@ -58,7 +71,8 @@ export async function findPreview(artist: string, title: string): Promise<Deezer
       .filter((track) => track.preview)
       .filter(
         (track) =>
-          similar(track.artist?.name ?? "", artist) && similar(track.title ?? "", title),
+          names.some((name) => similar(track.artist?.name ?? "", name)) &&
+          similar(track.title ?? "", title),
       )
       .sort((a, b) => (b.rank ?? 0) - (a.rank ?? 0));
 

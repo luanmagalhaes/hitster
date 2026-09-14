@@ -6,6 +6,7 @@ import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 interface AudioDeckProps {
   previewUrl: string | null;
   hasTrack: boolean;
+  searching: boolean;
   onSkip?: () => void;
 }
 
@@ -15,17 +16,19 @@ function formatTime(seconds: number): string {
   return `0:${String(Math.floor(safe)).padStart(2, "0")}`;
 }
 
-export function AudioDeck({ previewUrl, hasTrack, onSkip }: AudioDeckProps) {
+export function AudioDeck({ previewUrl, hasTrack, searching, onSkip }: AudioDeckProps) {
   const player = useAudioPlayer(previewUrl);
   const progress = player.duration > 0 ? Math.min(100, (player.elapsed / player.duration) * 100) : 0;
 
   const label = !hasTrack
     ? "Nada tocando"
-    : !previewUrl
-      ? "Procurando o som..."
-      : player.playing
+    : previewUrl
+      ? player.playing
         ? "Tocando"
-        : "Pausado";
+        : "Pausado"
+      : searching
+        ? "Procurando o som..."
+        : "Não achei essa faixa";
 
   return (
     <div className="edge-card rounded-3xl border-2 border-ink bg-ink p-4 text-sun sm:p-5">
@@ -37,9 +40,11 @@ export function AudioDeck({ previewUrl, hasTrack, onSkip }: AudioDeckProps) {
           <span className="mt-0.5 block text-xs text-cream/55">
             {!hasTrack
               ? "Quando for sua vez, toque a próxima música"
-              : !previewUrl
-                ? "Buscando a faixa no acervo"
-                : "Ouça quantas vezes quiser antes de cravar"}
+              : previewUrl
+                ? "Ouça quantas vezes quiser antes de cravar"
+                : searching
+                  ? "Buscando a faixa no acervo"
+                  : "O acervo não devolveu essa. Pule e puxe outra."}
           </span>
 
           <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-cream/15">
@@ -80,7 +85,7 @@ export function AudioDeck({ previewUrl, hasTrack, onSkip }: AudioDeckProps) {
         </p>
       ) : null}
 
-      {hasTrack && !previewUrl && onSkip ? (
+      {hasTrack && !previewUrl && !searching && onSkip ? (
         <button
           type="button"
           onClick={onSkip}
