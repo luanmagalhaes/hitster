@@ -29,7 +29,7 @@ function Group({ title, hint, options, chosen, tone, canEdit, busy, onPick }: Gr
         <span className="display text-xs uppercase tracking-[0.18em] text-ink/55">{title}</span>
         <span className="text-[0.65rem] font-semibold text-ink/40">{hint}</span>
       </div>
-      <div className="grid gap-2 sm:grid-cols-3">
+      <div className="grid grid-cols-3 gap-2">
         {options.map((option) => {
           const picked = chosen === option.key;
 
@@ -40,7 +40,7 @@ function Group({ title, hint, options, chosen, tone, canEdit, busy, onPick }: Gr
               disabled={!canEdit || busy}
               onClick={() => onPick(option.key)}
               aria-pressed={picked}
-              className={`display rounded-2xl border-2 border-ink px-3 py-2.5 text-center transition-all duration-150 ${
+              className={`display rounded-2xl border-2 border-ink px-2 py-2 text-center transition-all duration-150 ${
                 picked ? `${tone} shadow-[0_5px_0_var(--color-ink)]` : "bg-paper text-ink"
               } ${
                 canEdit && !busy
@@ -48,9 +48,11 @@ function Group({ title, hint, options, chosen, tone, canEdit, busy, onPick }: Gr
                   : "cursor-default"
               } ${!canEdit && !picked ? "opacity-45" : ""}`}
             >
-              <span className="block text-base leading-none">{option.head}</span>
-              <span className="mt-1 block text-[0.68rem] font-semibold">{option.label}</span>
-              <span className="mt-0.5 block text-[0.58rem] font-semibold opacity-70">
+              <span className="block text-sm leading-none sm:text-base">{option.head}</span>
+              <span className="mt-1 block text-[0.62rem] font-semibold sm:text-[0.68rem]">
+                {option.label}
+              </span>
+              <span className="mt-0.5 block text-[0.55rem] font-semibold leading-tight opacity-70 sm:text-[0.58rem]">
                 {option.hint}
               </span>
             </button>
